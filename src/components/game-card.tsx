@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Game } from "@/types";
@@ -114,7 +115,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
             </div>
           )}
         </div>
-        <CardDescription className="pt-1 text-muted-foreground">{game.description}</CardDescription>
+        <CardDescription className="pt-1 text-muted-foreground min-h-11">{game.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button

@@ -1,3 +1,4 @@
+
 import type { Game } from '@/types';
 import { Timer, BookOpenText, Globe, Film, Globe2, Music, Puzzle, MapPin, Zap, LayoutGrid } from 'lucide-react';
 
@@ -33,7 +34,7 @@ export const GAMES_DATA: Game[] = [
     id: 'emovi',
     name: 'Emovi',
     description: 'Guess the movie from a sequence of emojis.',
-    link: 'https://emovi.teuteuf.fr/', // Example link, user can update
+    link: 'https://emovi.teuteuf.fr/', 
     icon: Film,
     averageScore: 3, // tries, lower is better
     examplePreviousScores: [2, 4, 3],
@@ -51,7 +52,7 @@ export const GAMES_DATA: Game[] = [
     id: 'bandle',
     name: 'Bandle',
     description: 'Guess the band from a short audio clip.',
-    link: 'https://bandle.app/', // Example link, user can update
+    link: 'https://bandle.app/', 
     icon: Music,
     averageScore: 3, // tries, lower is better
     examplePreviousScores: [2, 4, 1],
@@ -78,18 +79,9 @@ export const GAMES_DATA: Game[] = [
     id: 'wikispeedrun',
     name: 'Wikipedia Speedrun',
     description: 'Navigate from a start to an end Wikipedia page.',
-    link: 'https://www.wikispeedruns.com/', // Example link, user can update
+    link: 'https://www.wikispeedruns.com/', 
     icon: Zap,
     averageScore: 120, // seconds, lower is better
     examplePreviousScores: [100, 150, 110],
-  },
-  {
-    id: 'boardle',
-    name: 'Boardle',
-    description: 'Guess the board game from a zoomed-in image of its components.',
-    link: 'https://www.boardle.co.uk/', // Example link, user can update
-    icon: LayoutGrid,
-    averageScore: 4, // tries, lower is better
-    examplePreviousScores: [3, 5, 2],
   },
 ];
