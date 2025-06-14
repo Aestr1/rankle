@@ -54,7 +54,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
 
     const validationInput: ValidateScoreInput = {
       gameName: game.name,
-      playerName: "GuestPlayer", // Placeholder as no auth
+      playerName: "RanklePlayer", 
       score: numericScore,
       previousScores: game.examplePreviousScores || [],
       averageScore: game.averageScore,

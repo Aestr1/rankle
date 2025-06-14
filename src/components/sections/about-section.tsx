@@ -8,12 +8,12 @@ export function AboutSection() {
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-headline text-primary">
             <Info className="mr-3 h-8 w-8 text-accent" />
-            <span id="about-title">About Daily Duel</span>
+            <span id="about-title">About Rankle</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-lg">
           <p>
-            Welcome to Daily Duel! This is your personal hub to track your scores and compete with friends on popular daily puzzle games.
+            Welcome to Rankle! This is your personal hub to track your scores and compete with friends on popular daily puzzle games.
           </p>
           <p>
             <strong>How it works:</strong>
