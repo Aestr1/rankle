@@ -12,8 +12,9 @@ import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, ExternalLink, Loader2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useAuth } from "@/contexts/auth-context";
 
 interface GameCardProps {
   game: Game;
@@ -23,7 +24,7 @@ interface GameCardProps {
 }
 
 const scoreSchema = z.object({
-  score: z.string().refine(val => !isNaN(parseFloat(val)), {
+  score: z.string().refine(val => !isNaN(parseFloat(val)) && val.trim() !== "", {
     message: "Score must be a number.",
   }),
 });
@@ -32,6 +33,8 @@ type ScoreFormData = z.infer<typeof scoreSchema>;
 export function GameCard({ game, isCompleted, onComplete, submittedScore }: GameCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+
   const form = useForm<ScoreFormData>({
     resolver: zodResolver(scoreSchema),
     defaultValues: {
@@ -43,6 +46,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
     setIsLoading(true);
     const numericScore = parseFloat(data.score);
 
+    // This check is technically redundant due to zod, but good for explicit clarity
     if (isNaN(numericScore)) {
       toast({
         title: "Invalid Score",
@@ -55,7 +59,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
 
     const validationInput: ValidateScoreInput = {
       gameName: game.name,
-      playerName: "RanklePlayer", 
+      playerName: currentUser?.displayName || "RanklePlayer", 
       score: numericScore,
       previousScores: game.examplePreviousScores || [],
       averageScore: game.averageScore,
@@ -101,7 +105,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
   };
 
   return (
-    <Card className={`shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02] ${isCompleted ? 'border-green-500 border-2 bg-green-500/10' : 'border-border'}`}>
+    <Card className={`shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02] flex flex-col ${isCompleted ? 'border-green-500 border-2 bg-green-500/10' : 'border-border'}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center text-2xl font-headline text-primary">
@@ -115,9 +119,9 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
             </div>
           )}
         </div>
-        <CardDescription className="pt-1 text-muted-foreground min-h-11">{game.description}</CardDescription>
+        <CardDescription className="pt-1 text-muted-foreground min-h-[3em]">{game.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-grow">
         <Button
           variant="outline"
           className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
@@ -140,7 +144,8 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
                     <FormControl>
                       <Input
                         id={`score-${game.id}`}
-                        type="text"
+                        type="text" 
+                        inputMode="decimal"
                         placeholder="Enter your score"
                         {...field}
                         className="text-base"
@@ -151,13 +156,15 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isLoading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button type="submit" disabled={isLoading || !currentUser} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Validating...
                   </>
-                ) : (
+                ) : !currentUser ? (
+                    "Sign in to Submit"
+                ): (
                   "Submit Score"
                 )}
               </Button>
@@ -169,7 +176,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
           )
         )}
       </CardContent>
-      <CardFooter className="text-xs text-muted-foreground">
+      <CardFooter className="text-xs text-muted-foreground mt-auto">
         Average score: {game.averageScore}
       </CardFooter>
     </Card>
