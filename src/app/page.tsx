@@ -1,12 +1,21 @@
 
+"use client";
+
 import { AboutSection } from "@/components/sections/about-section";
 import { GamesSection } from "@/components/sections/games-section";
 import { LeaderboardSection } from "@/components/sections/leaderboard-section";
 import { AnalyticsSection } from "@/components/sections/analytics-section";
 import { Trophy } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
+import React, { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
@@ -25,7 +34,7 @@ export default function Home() {
         <AnalyticsSection />
       </main>
       <footer className="text-center p-6 text-muted-foreground border-t">
-        © {new Date().getFullYear()} Rankle. Sharpen your mind, one game at a time.
+        {currentYear ? `© ${currentYear} Rankle. Sharpen your mind, one game at a time.` : 'Loading year...'}
       </footer>
     </div>
   );
