@@ -30,19 +30,27 @@ if (typeof window !== 'undefined') { // Ensure Firebase is initialized only on t
   db = getFirestore(app);
 
   if (firebaseConfig.measurementId) {
-    analytics = getAnalytics(app);
+    try {
+      analytics = getAnalytics(app);
+    } catch (error) {
+      console.error("Failed to initialize Firebase Analytics", error);
+    }
   }
 } else {
-  // Handle server-side (e.g., if you needed admin SDK or specific server-side Firebase logic)
-  // For client-side focused Firebase like auth and analytics, this branch might not initialize them.
-  // If you need to initialize app for other server-side Firebase services (not client-auth/analytics):
-  if (!getApps().length) {
-     // app = initializeApp(firebaseConfig); // Or server-specific config
-  } else {
-     // app = getApps()[0];
+  // On the server, we might not initialize client-side services like auth or analytics
+  // If server-side Firebase Admin SDK or other services were needed, they'd be handled differently.
+  // For this client-focused app, we primarily care about the browser environment.
+  // We can still initialize the app object if it's needed for other server-side Firebase services (not client-auth/analytics)
+  // that might use the same config, but it's less common for this setup.
+  if (!getApps().length && firebaseConfig.projectId) { // Check projectId to ensure config is somewhat valid
+    // app = initializeApp(firebaseConfig); // Example: if needed for server-side non-admin Firebase services
+  } else if (getApps().length > 0) {
+    // app = getApps()[0];
   }
-  // db = getFirestore(app); // etc.
+  // db = getFirestore(app); // Example for server-side Firestore, usually done with Admin SDK
 }
 
-
+// Export the initialized instances for use in other parts of the application
+// Ensure 'auth' and 'db' are exported even if potentially uninitialized on server,
+// components using them should also check for client-side execution or handle undefined.
 export { app, auth, db, analytics };
