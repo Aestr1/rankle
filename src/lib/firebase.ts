@@ -27,3 +27,4 @@ auth = getAuth(app);
 db = getFirestore(app);
 
 export { app, auth, db };
+
