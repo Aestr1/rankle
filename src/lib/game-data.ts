@@ -1,5 +1,5 @@
 
-import type { Game } from '@/types';
+import type { Game, LibraryGame } from '@/types';
 import { Timer, BookOpenText, Globe, Film, Globe2, Music, Puzzle, MapPin, Zap, LayoutGrid } from 'lucide-react';
 
 export const GAMES_DATA: Game[] = [
@@ -34,7 +34,7 @@ export const GAMES_DATA: Game[] = [
     id: 'emovi',
     name: 'Emovi',
     description: 'Guess the movie from a sequence of emojis.',
-    link: 'https://emovi.teuteuf.fr/', 
+    link: 'https://emovi.teuteuf.fr/',
     icon: Film,
     averageScore: 3, // tries, lower is better
     examplePreviousScores: [2, 4, 3],
@@ -52,7 +52,7 @@ export const GAMES_DATA: Game[] = [
     id: 'bandle',
     name: 'Bandle',
     description: 'Guess the band from a short audio clip.',
-    link: 'https://bandle.app/', 
+    link: 'https://bandle.app/',
     icon: Music,
     averageScore: 3, // tries, lower is better
     examplePreviousScores: [2, 4, 1],
@@ -79,9 +79,32 @@ export const GAMES_DATA: Game[] = [
     id: 'wikispeedrun',
     name: 'Wikipedia Speedrun',
     description: 'Navigate from a start to an end Wikipedia page.',
-    link: 'https://www.wikispeedruns.com/', 
+    link: 'https://www.wikispeedruns.com/',
     icon: Zap,
     averageScore: 120, // seconds, lower is better
     examplePreviousScores: [100, 150, 110],
   },
+];
+
+export const LIBRARY_GAMES_DATA: LibraryGame[] = [
+  { id: 'lib-game-1', name: 'Placeholder Game 1' },
+  { id: 'lib-game-2', name: 'Placeholder Game 2' },
+  { id: 'lib-game-3', name: 'Placeholder Game 3' },
+  { id: 'lib-game-4', name: 'Placeholder Game 4' },
+  { id: 'lib-game-5', name: 'Placeholder Game 5' },
+  { id: 'lib-game-6', name: 'Placeholder Game 6' },
+  { id: 'lib-game-7', name: 'Placeholder Game 7' },
+  { id: 'lib-game-8', name: 'Placeholder Game 8' },
+  { id: 'lib-game-9', name: 'Placeholder Game 9' },
+  { id: 'lib-game-10', name: 'Placeholder Game 10' },
+  { id: 'lib-game-11', name: 'Placeholder Game 11' },
+  { id: 'lib-game-12', name: 'Placeholder Game 12' },
+  { id: 'lib-game-13', name: 'Placeholder Game 13' },
+  { id: 'lib-game-14', name: 'Placeholder Game 14' },
+  { id: 'lib-game-15', name: 'Placeholder Game 15' },
+  { id: 'lib-game-16', name: 'Placeholder Game 16' },
+  { id: 'lib-game-17', name: 'Placeholder Game 17' },
+  { id: 'lib-game-18', name: 'Placeholder Game 18' },
+  { id: 'lib-game-19', name: 'Placeholder Game 19' },
+  { id: 'lib-game-20', name: 'Placeholder Game 20' },
 ];

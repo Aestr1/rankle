@@ -5,6 +5,7 @@ import { AboutSection } from "@/components/sections/about-section";
 import { GamesSection } from "@/components/sections/games-section";
 import { LeaderboardSection } from "@/components/sections/leaderboard-section";
 import { AnalyticsSection } from "@/components/sections/analytics-section";
+import { PlayGroupsSection } from "@/components/sections/play-groups-section";
 import { Trophy } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import React, { useState, useEffect } from 'react';
@@ -29,6 +30,7 @@ export default function Home() {
       </header>
       <main className="flex-grow container mx-auto p-4 md:p-8 space-y-12">
         <AboutSection />
+        <PlayGroupsSection />
         <GamesSection />
         <LeaderboardSection />
         <AnalyticsSection />
