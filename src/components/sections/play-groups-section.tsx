@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users2, PlusCircle, UserPlus } from "lucide-react";
+import { Users2, PlusCircle, UserPlus, Layers } from "lucide-react";
 
 export function PlayGroupsSection() {
   return (
@@ -18,17 +18,22 @@ export function PlayGroupsSection() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-lg text-muted-foreground">
-            Create or join custom game groups with your friends!
+            Create or join custom game groups with your friends, or view your existing groups!
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild size="lg" className="flex-1 bg-primary hover:bg-primary/90">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
               <Link href="/create-group">
-                <PlusCircle className="mr-2 h-5 w-5" /> Create a Play Group
+                <PlusCircle className="mr-2 h-5 w-5" /> Create Group
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="flex-1">
+            <Button asChild variant="outline" size="lg">
               <Link href="/join-group">
-                <UserPlus className="mr-2 h-5 w-5" /> Join a Play Group
+                <UserPlus className="mr-2 h-5 w-5" /> Join Group
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="lg">
+              <Link href="/my-groups">
+                <Layers className="mr-2 h-5 w-5" /> My Groups
               </Link>
             </Button>
           </div>
