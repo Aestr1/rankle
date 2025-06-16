@@ -31,7 +31,13 @@ if (typeof window !== 'undefined') { // Ensure Firebase is initialized only on t
 
   if (firebaseConfig.measurementId) {
     try {
-      analytics = getAnalytics(app);
+      // Check if analytics is already initialized to prevent re-initialization error
+      // This is a common pattern, though getAnalytics itself might be idempotent.
+      // However, to be safe, especially in HMR scenarios:
+      const existingAnalytics = getApps().find(existingApp => (existingApp as any)._analytics);
+      if (!existingAnalytics) {
+        analytics = getAnalytics(app);
+      }
     } catch (error) {
       console.error("Failed to initialize Firebase Analytics", error);
     }
@@ -40,17 +46,12 @@ if (typeof window !== 'undefined') { // Ensure Firebase is initialized only on t
   // On the server, we might not initialize client-side services like auth or analytics
   // If server-side Firebase Admin SDK or other services were needed, they'd be handled differently.
   // For this client-focused app, we primarily care about the browser environment.
-  // We can still initialize the app object if it's needed for other server-side Firebase services (not client-auth/analytics)
-  // that might use the same config, but it's less common for this setup.
-  if (!getApps().length && firebaseConfig.projectId) { // Check projectId to ensure config is somewhat valid
-    // app = initializeApp(firebaseConfig); // Example: if needed for server-side non-admin Firebase services
+  if (!getApps().length && firebaseConfig.projectId) { 
+    // app = initializeApp(firebaseConfig); // Not typically needed for client-side focused setup
   } else if (getApps().length > 0) {
     // app = getApps()[0];
   }
-  // db = getFirestore(app); // Example for server-side Firestore, usually done with Admin SDK
+  // db = getFirestore(app); // Usually done with Admin SDK on server
 }
 
-// Export the initialized instances for use in other parts of the application
-// Ensure 'auth' and 'db' are exported even if potentially uninitialized on server,
-// components using them should also check for client-side execution or handle undefined.
 export { app, auth, db, analytics };
