@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users2, PlusCircle, UserPlus, Layers } from "lucide-react";
+import { Users2, PlusCircle, UserPlus } from "lucide-react";
 
 export function PlayGroupsSection() {
   return (
@@ -20,7 +20,7 @@ export function PlayGroupsSection() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
               <Link href="/create-group">
                 <PlusCircle className="mr-2 h-5 w-5" /> Create Group
@@ -29,11 +29,6 @@ export function PlayGroupsSection() {
             <Button asChild variant="outline" size="lg">
               <Link href="/join-group">
                 <UserPlus className="mr-2 h-5 w-5" /> Join Group
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="lg">
-              <Link href="/my-groups">
-                <Layers className="mr-2 h-5 w-5" /> My Groups
               </Link>
             </Button>
           </div>
