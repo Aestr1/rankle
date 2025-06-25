@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Game } from "@/types";
+import type { Game, Gameplay } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,14 @@ import * as z from "zod";
 import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/auth-context";
+import { addGameplay } from "@/lib/gameplay";
 
 interface GameCardProps {
   game: Game;
   isCompleted: boolean;
   onComplete: (gameId: string, score: number) => void;
   submittedScore?: number | null;
+  groupId: string | null;
 }
 
 const scoreSchema = z.object({
@@ -30,8 +32,8 @@ const scoreSchema = z.object({
 });
 type ScoreFormData = z.infer<typeof scoreSchema>;
 
-export function GameCard({ game, isCompleted, onComplete, submittedScore }: GameCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function GameCard({ game, isCompleted, onComplete, submittedScore, groupId }: GameCardProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useAuth();
 
@@ -43,19 +45,9 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
   });
 
   const onSubmit: SubmitHandler<ScoreFormData> = async (data) => {
-    setIsLoading(true);
+    if (!currentUser) return;
+    setIsSubmitting(true);
     const numericScore = parseFloat(data.score);
-
-    // This check is technically redundant due to zod, but good for explicit clarity
-    if (isNaN(numericScore)) {
-      toast({
-        title: "Invalid Score",
-        description: "Please enter a valid number for your score.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
 
     const validationInput: ValidateScoreInput = {
       gameName: game.name,
@@ -68,6 +60,16 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
     try {
       const result = await validateScore(validationInput);
       if (result.isValid) {
+        const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
+            userId: currentUser.uid,
+            userDisplayName: currentUser.displayName || "Anonymous",
+            gameId: game.id,
+            groupId: groupId,
+            score: numericScore
+        };
+
+        await addGameplay(gameplayData);
+        
         toast({
           title: "Score Submitted!",
           description: (
@@ -93,14 +95,14 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
         });
       }
     } catch (error) {
-      console.error("Validation error:", error);
+      console.error("Submission error:", error);
       toast({
         title: "Error",
-        description: "Could not validate score. Please try again.",
+        description: "Could not validate or submit score. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -156,8 +158,8 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isLoading || !currentUser} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                {isLoading ? (
+              <Button type="submit" disabled={isSubmitting || !currentUser} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Validating...
@@ -172,7 +174,10 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore }: Game
           </Form>
         ) : (
           submittedScore !== null && submittedScore !== undefined && (
-            <p className="text-center text-lg font-medium">Your score: {submittedScore}</p>
+            <div className="text-center">
+              <p className="text-lg font-medium">Your score: {submittedScore}</p>
+              <p className="text-xs text-muted-foreground">Score saved to leaderboard.</p>
+            </div>
           )
         )}
       </CardContent>

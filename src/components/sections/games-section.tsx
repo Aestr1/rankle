@@ -14,47 +14,36 @@ interface CompletedGameInfo {
 
 const getTodaysStorageKey = () => {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  return `dailyDuelCompletedGames_${today}`;
+  return `global_completedGames_${today}`;
 };
 
 export function GamesSection() {
+  // This state now tracks completion for the session, not for data persistence.
+  // The database is the source of truth, but this gives instant UI feedback.
   const [completedGames, setCompletedGames] = useState<CompletedGameInfo[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    // You could still use localStorage to remember which games the user *played*
+    // during this session on this device, to keep the UI checked.
     const key = getTodaysStorageKey();
     try {
       const storedCompleted = localStorage.getItem(key);
       if (storedCompleted) {
         setCompletedGames(JSON.parse(storedCompleted));
-      } else {
-        // Clear old keys if any for hygiene
-        Object.keys(localStorage).forEach(k => {
-          if (k.startsWith('dailyDuelCompletedGames_') && k !== key) {
-            localStorage.removeItem(k);
-          }
-        });
-        setCompletedGames([]);
       }
     } catch (error) {
       console.error("Error accessing localStorage:", error);
-      // Fallback or error handling if localStorage is not available/accessible
       setCompletedGames([]);
     }
   }, []);
 
   const handleGameComplete = useCallback((gameId: string, score: number) => {
+    // This now just updates the UI for the current session.
     const key = getTodaysStorageKey();
     setCompletedGames(prev => {
-      // Avoid duplicates, update if already completed (though UI might prevent this)
-      const existing = prev.find(g => g.id === gameId);
-      let newCompletedGames;
-      if (existing) {
-        newCompletedGames = prev.map(g => g.id === gameId ? { id: gameId, score } : g);
-      } else {
-        newCompletedGames = [...prev, { id: gameId, score }];
-      }
+      const newCompletedGames = [...prev, { id: gameId, score }];
       try {
         localStorage.setItem(key, JSON.stringify(newCompletedGames));
       } catch (error) {
@@ -99,7 +88,7 @@ export function GamesSection() {
             <span id="games-title">Global Daily Challenge</span>
           </CardTitle>
            <CardDescription>
-              Play today's featured games. Your scores here are just for you, saved on this device.
+              Play today's featured games. Scores submitted here are added to your personal analytics but not to a public leaderboard.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -113,6 +102,7 @@ export function GamesSection() {
                   isCompleted={!!completedInfo}
                   submittedScore={completedInfo?.score}
                   onComplete={handleGameComplete}
+                  groupId={null} // This signifies a global game
                 />
               );
             })}

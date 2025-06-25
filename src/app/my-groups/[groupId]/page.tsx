@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { GAMES_DATA } from '@/lib/game-data';
 import { GameCard } from '@/components/game-card';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from "firebase/firestore";
+import { GroupLeaderboard } from '@/components/group-leaderboard';
 
 interface GroupCompletedGameInfo {
   id: string; // game id
@@ -27,7 +28,9 @@ export default function IndividualGroupPage() {
   const { currentUser } = useAuth();
   const params = useParams();
   const groupId = params.groupId as string;
+  const [key, setKey] = useState(0); // Key to force-rerender leaderboard
 
+  // This state now tracks completion for the session, not for data persistence.
   const [completedGroupGames, setCompletedGroupGames] = useState<GroupCompletedGameInfo[]>([]);
   
   useEffect(() => {
@@ -49,16 +52,6 @@ export default function IndividualGroupPage() {
             ...groupData, 
             selectedGamesDetails: gamesForGroup 
         });
-
-        // Load completion status for this specific group from localStorage
-        const key = getGroupStorageKey(groupId);
-        try {
-            const storedCompleted = localStorage.getItem(key);
-            setCompletedGroupGames(storedCompleted ? JSON.parse(storedCompleted) : []);
-        } catch (error) {
-            console.error("Error accessing localStorage for group games:", error);
-            setCompletedGroupGames([]);
-        }
       } else {
         setGroup(null);
       }
@@ -72,30 +65,12 @@ export default function IndividualGroupPage() {
     return () => unsubscribe();
   }, [groupId]);
 
-  const getGroupStorageKey = (currentGroupId: string) => {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    return `group_${currentGroupId}_completedGames_${today}`;
-  };
-
-  const handleGroupGameComplete = (gameId: string, score: number) => {
-    if (!group) return;
-    const key = getGroupStorageKey(group.id);
-    setCompletedGroupGames(prev => {
-      const existing = prev.find(g => g.id === gameId);
-      let newCompletedGames;
-      if (existing) {
-        newCompletedGames = prev.map(g => g.id === gameId ? { id: gameId, score } : g);
-      } else {
-        newCompletedGames = [...prev, { id: gameId, score }];
-      }
-      try {
-        localStorage.setItem(key, JSON.stringify(newCompletedGames));
-      } catch (error) {
-        console.error("Error saving group game to localStorage:", error);
-      }
-      return newCompletedGames;
-    });
-  };
+  const handleGroupGameComplete = useCallback((gameId: string, score: number) => {
+    // Update session state to reflect completion in the UI instantly
+    setCompletedGroupGames(prev => [...prev, { id: gameId, score }]);
+    // Force the leaderboard to re-fetch data
+    setKey(prevKey => prevKey + 1);
+  }, []);
 
   if (isLoading) {
     return (
@@ -179,11 +154,12 @@ export default function IndividualGroupPage() {
                     const completedInfo = completedGroupGames.find(cg => cg.id === game.id);
                     return (
                         <GameCard
-                        key={game.id}
-                        game={game}
-                        isCompleted={!!completedInfo}
-                        submittedScore={completedInfo?.score}
-                        onComplete={handleGroupGameComplete}
+                          key={game.id}
+                          game={game}
+                          isCompleted={!!completedInfo}
+                          submittedScore={completedInfo?.score}
+                          onComplete={handleGroupGameComplete}
+                          groupId={group.id}
                         />
                     );
                 })}
@@ -195,6 +171,19 @@ export default function IndividualGroupPage() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center text-2xl font-headline text-accent">
+                  <BarChart3 className="mr-3 h-7 w-7" />
+                  Today's Group Leaderboard
+                </CardTitle>
+                <CardDescription>Scores and ranks for today's date.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <GroupLeaderboard key={key} groupId={group.id} />
+              </CardContent>
+            </Card>
+
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl font-headline text-accent">
@@ -213,22 +202,6 @@ export default function IndividualGroupPage() {
                     </li>
                   ))}
                 </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-2xl font-headline text-accent">
-                  <BarChart3 className="mr-3 h-7 w-7" />
-                  Group Leaderboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center min-h-[150px] text-center text-muted-foreground p-6 rounded-lg border-2 border-dashed">
-                  <BarChart3 className="h-12 w-12 mb-3 text-primary opacity-50" />
-                  <h3 className="text-lg font-semibold mb-1">Group Leaderboard Coming Soon!</h3>
-                  <p className="text-sm">Track scores and rankings specific to this group.</p>
-                </div>
               </CardContent>
             </Card>
         </div>

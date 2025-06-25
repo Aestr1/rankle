@@ -9,11 +9,12 @@ export interface Game {
   icon: LucideIcon;
   averageScore: number;
   examplePreviousScores: number[];
+  scoring: 'asc' | 'desc'; // asc for lower is better, desc for higher is better
 }
 
 export interface LibraryGame {
   id: string;
-  name: string;
+  name:string;
 }
 
 export interface PlayGroupMember {
@@ -33,4 +34,14 @@ export interface PlayGroup {
   joinCode: string; // This might be sensitive, consider how it's used/fetched
   members: PlayGroupMember[];
   createdAt: any; // Firestore timestamp or Date
+}
+
+export interface Gameplay {
+    id?: string;
+    userId: string;
+    userDisplayName: string;
+    gameId: string;
+    groupId: string | null;
+    score: number;
+    playedAt: any; // Firestore timestamp
 }
