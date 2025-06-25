@@ -1,10 +1,11 @@
+
 "use client";
 
 import { GAMES_DATA } from "@/lib/game-data";
 import { GameCard } from "@/components/game-card";
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gamepad2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Globe } from "lucide-react";
 
 interface CompletedGameInfo {
   id: string;
@@ -70,9 +71,12 @@ export function GamesSection() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
-              <Gamepad2 className="mr-3 h-8 w-8 text-accent" />
-              <span id="games-title">Daily Games</span>
+              <Globe className="mr-3 h-8 w-8 text-accent" />
+              <span id="games-title">Global Daily Challenge</span>
             </CardTitle>
+             <CardDescription>
+              Play today's featured games. Your scores here are just for you, saved on this device.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -91,9 +95,12 @@ export function GamesSection() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-headline text-primary">
-            <Gamepad2 className="mr-3 h-8 w-8 text-accent" />
-            <span id="games-title">Daily Games</span>
+            <Globe className="mr-3 h-8 w-8 text-accent" />
+            <span id="games-title">Global Daily Challenge</span>
           </CardTitle>
+           <CardDescription>
+              Play today's featured games. Your scores here are just for you, saved on this device.
+            </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

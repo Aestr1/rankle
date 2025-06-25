@@ -30,8 +30,8 @@ export default function Home() {
       </header>
       <main className="flex-grow container mx-auto p-4 md:p-8 space-y-12">
         <AboutSection />
-        <PlayGroupsSection />
         <GamesSection />
+        <PlayGroupsSection />
         <LeaderboardSection />
         <AnalyticsSection />
       </main>
