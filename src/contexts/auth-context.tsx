@@ -91,7 +91,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
-       if (error.code === 'auth/unauthorized-domain') {
+      if (error.code === 'auth/popup-closed-by-user') {
+          toast({
+              title: "Sign-In Window Closed",
+              description: "The sign-in window was closed before completing. This can happen if the Firebase project is not configured correctly. Please double-check your settings.",
+              variant: "destructive",
+              duration: 10000,
+          });
+      } else if (error.code === 'auth/unauthorized-domain') {
         toast({
           title: "Configuration Error",
           description: (
