@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { validateScore, type ValidateScoreInput } from "@/ai/flows/validate-score";
 import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,56 +48,28 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
     setIsSubmitting(true);
     const numericScore = parseFloat(data.score);
 
-    const validationInput: ValidateScoreInput = {
-      gameName: game.name,
-      playerName: currentUser?.displayName || "RanklePlayer", 
-      score: numericScore,
-      previousScores: game.examplePreviousScores || [],
-      averageScore: game.averageScore,
-    };
-
     try {
-      const result = await validateScore(validationInput);
-      if (result.isValid) {
-        const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
-            userId: currentUser.uid,
-            userDisplayName: currentUser.displayName || "Anonymous",
-            gameId: game.id,
-            groupId: groupId,
-            score: numericScore
-        };
+      const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
+          userId: currentUser.uid,
+          userDisplayName: currentUser.displayName || "Anonymous",
+          gameId: game.id,
+          groupId: groupId,
+          score: numericScore
+      };
 
-        await addGameplay(gameplayData);
-        
-        toast({
-          title: "Score Submitted!",
-          description: (
-            <div>
-              <p>Your score for {game.name} is {numericScore}.</p>
-              <p className="text-sm text-muted-foreground mt-1">AI Reason: {result.reason}</p>
-            </div>
-          ),
-          variant: "default",
-        });
-        onComplete(game.id, numericScore);
-      } else {
-        toast({
-          title: "Score Validation Issue",
-          description: (
-             <div>
-              <p>AI thinks your score might be unusual.</p>
-              <p className="text-sm text-muted-foreground mt-1">AI Reason: {result.reason}</p>
-            </div>
-          ),
-          variant: "destructive",
-          duration: 7000,
-        });
-      }
+      await addGameplay(gameplayData);
+      
+      toast({
+        title: "Score Submitted!",
+        description: `Your score of ${numericScore} for ${game.name} has been saved.`,
+        variant: "default",
+      });
+      onComplete(game.id, numericScore);
     } catch (error) {
       console.error("Submission error:", error);
       toast({
         title: "Error",
-        description: "Could not validate or submit score. Please try again.",
+        description: "Could not submit score. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -162,7 +133,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Validating...
+                    Submitting...
                   </>
                 ) : !currentUser ? (
                     "Sign in to Submit"
