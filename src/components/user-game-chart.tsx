@@ -25,8 +25,7 @@ export function UserGameChart({ game, gameplays }: UserGameChartProps) {
       // Firestore Timestamps need to be converted to JS Dates
       date: gp.playedAt.toDate(),
       score: gp.score,
-    }))
-    .sort((a, b) => a.date.getTime() - b.date.getTime()); // Ensure data is chronological
+    }));
 
   const yAxisDomain: [number | 'auto', number | 'auto'] = ['auto', 'auto'];
   if (game.scoring === 'asc') {

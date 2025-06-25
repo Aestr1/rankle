@@ -51,7 +51,7 @@ export async function getUserGameplays(userId: string): Promise<Gameplay[]> {
     const q = query(
         collection(db, "gameplays"),
         where("userId", "==", userId),
-        orderBy("playedAt", "desc")
+        orderBy("playedAt", "asc")
     );
 
     const querySnapshot = await getDocs(q);
