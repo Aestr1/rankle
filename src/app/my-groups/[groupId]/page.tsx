@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthButton } from '@/components/auth-button';
-import { Trophy, ArrowLeft, Gamepad2, Users, BarChart3, Info, Loader2 } from 'lucide-react';
+import { Trophy, ArrowLeft, Gamepad2, Users, BarChart3, Info, Loader2, Copy } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import type { PlayGroup, Game } from '@/types';
 import { GAMES_DATA } from '@/lib/game-data';
@@ -15,6 +15,7 @@ import { GameCard } from '@/components/game-card';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from "firebase/firestore";
 import { GroupLeaderboard } from '@/components/group-leaderboard';
+import { useToast } from '@/hooks/use-toast';
 
 interface GroupCompletedGameInfo {
   id: string; // game id
@@ -29,6 +30,7 @@ export default function IndividualGroupPage() {
   const params = useParams();
   const groupId = params.groupId as string;
   const [key, setKey] = useState(0); // Key to force-rerender leaderboard
+  const { toast } = useToast();
 
   // This state now tracks completion for the session, not for data persistence.
   const [completedGroupGames, setCompletedGroupGames] = useState<GroupCompletedGameInfo[]>([]);
@@ -71,6 +73,16 @@ export default function IndividualGroupPage() {
     // Force the leaderboard to re-fetch data
     setKey(prevKey => prevKey + 1);
   }, []);
+
+  const handleCopyCode = () => {
+    if (!group) return;
+    navigator.clipboard.writeText(group.joinCode).then(() => {
+        toast({
+            title: "Copied to Clipboard!",
+            description: `The join code "${group.joinCode}" is ready to be shared.`,
+        });
+    });
+  };
 
   if (isLoading) {
     return (
@@ -190,7 +202,14 @@ export default function IndividualGroupPage() {
                   <Users className="mr-3 h-7 w-7" />
                   Members ({group.members.length})
                 </CardTitle>
-                 <CardDescription>Join Code: <span className="font-mono bg-muted/80 px-1.5 py-0.5 rounded text-foreground/80 ml-1">{group.joinCode}</span></CardDescription>
+                 <div className="flex items-center text-sm pt-1">
+                    <span className="text-muted-foreground">Join Code:</span>
+                    <span className="font-mono bg-muted/80 px-1.5 py-0.5 rounded text-foreground/80 ml-2">{group.joinCode}</span>
+                     <Button variant="ghost" size="icon" onClick={handleCopyCode} className="ml-1 h-7 w-7">
+                        <span className="sr-only">Copy join code</span>
+                        <Copy className="h-4 w-4" />
+                    </Button>
+                 </div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-muted-foreground">

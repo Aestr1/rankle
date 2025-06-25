@@ -11,10 +11,11 @@ import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/auth-context";
-import { addGameplay } from "@/lib/gameplay";
+import { addGameplay, getUserGameplays } from "@/lib/gameplay";
+import { validateScore } from "@/ai/flows/validate-score";
 
 interface GameCardProps {
   game: Game;
@@ -33,6 +34,7 @@ type ScoreFormData = z.infer<typeof scoreSchema>;
 
 export function GameCard({ game, isCompleted, onComplete, submittedScore, groupId }: GameCardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Submit Score");
   const { toast } = useToast();
   const { currentUser } = useAuth();
 
@@ -49,6 +51,38 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
     const numericScore = parseFloat(data.score);
 
     try {
+      setLoadingMessage("Validating...");
+      const allGameplays = await getUserGameplays(currentUser.uid);
+      const previousScores = allGameplays
+          .filter(gp => gp.gameId === game.id)
+          .map(gp => gp.score);
+      
+      const validationResult = await validateScore({
+          gameName: game.name,
+          playerName: currentUser.displayName || 'Anonymous',
+          score: numericScore,
+          previousScores: previousScores,
+          averageScore: game.averageScore
+      });
+
+      if (!validationResult.isValid) {
+          toast({
+              title: "Score Validation Failed",
+              description: validationResult.reason,
+              variant: "destructive",
+              duration: 8000
+          });
+          setIsSubmitting(false);
+          return;
+      }
+      
+      toast({
+          title: "Validation Successful",
+          description: validationResult.reason,
+          duration: 5000,
+      });
+
+      setLoadingMessage("Submitting...");
       const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
           userId: currentUser.uid,
           userDisplayName: currentUser.displayName || "Anonymous",
@@ -74,6 +108,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
       });
     } finally {
       setIsSubmitting(false);
+      setLoadingMessage("Submit Score");
     }
   };
 
@@ -133,12 +168,15 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
+                    {loadingMessage}...
                   </>
                 ) : !currentUser ? (
                     "Sign in to Submit"
                 ): (
-                  "Submit Score"
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Submit Score with AI
+                  </>
                 )}
               </Button>
             </form>
