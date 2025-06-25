@@ -5,6 +5,12 @@ import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from 'next/navigation';
+
+// Firebase imports
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs, updateDoc, arrayUnion, doc } from "firebase/firestore";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -26,6 +32,7 @@ export default function JoinGroupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -48,27 +55,56 @@ export default function JoinGroupPage() {
       return;
     }
     setIsLoading(true);
-    console.log("Join Group Code:", data.joinCode);
-    console.log("User ID:", currentUser.uid);
-    // TODO: Implement Firestore logic to find and join the group
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+    
+    try {
+        const lowerCaseJoinCode = data.joinCode.toLowerCase();
+        const groupsRef = collection(db, "groups");
+        const q = query(groupsRef, where("joinCode", "==", lowerCaseJoinCode));
+        const querySnapshot = await getDocs(q);
 
-    // Simulate success/failure
-    const success = Math.random() > 0.3; // Simulate finding a group
-    if (success) {
-      toast({
-        title: "Joined Group (Simulated)",
-        description: `You've successfully joined the group with code "${data.joinCode}". Check console for details.`,
-      });
-      form.reset();
-    } else {
-      toast({
-        title: "Group Not Found (Simulated)",
-        description: `Could not find a group with code "${data.joinCode}".`,
-        variant: "destructive",
-      });
+        if (querySnapshot.empty) {
+            toast({
+                title: "Group Not Found",
+                description: `Could not find a group with code "${data.joinCode}". Please check the code and try again.`,
+                variant: "destructive",
+            });
+        } else {
+            const groupDoc = querySnapshot.docs[0];
+            const groupData = groupDoc.data();
+
+            if (groupData.memberUids.includes(currentUser.uid)) {
+                toast({
+                    title: "Already in Group",
+                    description: `You are already a member of "${groupData.name}".`,
+                });
+                router.push(`/my-groups/${groupDoc.id}`);
+                return;
+            }
+
+            await updateDoc(doc(db, "groups", groupDoc.id), {
+                members: arrayUnion({
+                    uid: currentUser.uid,
+                    displayName: currentUser.displayName,
+                }),
+                memberUids: arrayUnion(currentUser.uid)
+            });
+
+            toast({
+                title: "Successfully Joined Group!",
+                description: `You are now a member of "${groupData.name}".`,
+            });
+            router.push(`/my-groups/${groupDoc.id}`);
+        }
+    } catch (error) {
+        console.error("Error joining group:", error);
+        toast({
+            title: "Error Joining Group",
+            description: "Something went wrong. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

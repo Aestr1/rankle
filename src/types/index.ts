@@ -28,7 +28,8 @@ export interface PlayGroup {
   creatorId: string;
   creatorName?: string; // Denormalized for easier display
   gameIds: string[];
-  selectedGamesDetails?: LibraryGame[]; // To store details of selected games if fetched
+  memberUids: string[]; // For efficient querying of user's groups
+  selectedGamesDetails?: Game[]; // To store details of selected games if fetched
   joinCode: string; // This might be sensitive, consider how it's used/fetched
   members: PlayGroupMember[];
   createdAt: any; // Firestore timestamp or Date

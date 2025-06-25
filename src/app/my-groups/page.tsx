@@ -4,82 +4,55 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthButton } from '@/components/auth-button';
-import { Trophy, ShieldCheck, Users, BarChart3, Settings2, Info } from 'lucide-react';
+import { Trophy, ShieldCheck, Info, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import type { PlayGroup, PlayGroupMember } from '@/types';
-import { GroupCard } from '@/components/group-card'; // We will create this component
+import type { PlayGroup } from '@/types';
+import { GroupCard } from '@/components/group-card';
 
-// Mock data for now - replace with Firestore fetching logic
-const MOCK_GROUPS: PlayGroup[] = [
-  {
-    id: "group1",
-    name: "Weekend Puzzle Masters",
-    creatorId: "user123",
-    creatorName: "Alice Wonderland",
-    gameIds: ["wordle", "connections", "timeguessr"],
-    joinCode: "PUZZLEFUN",
-    members: [
-      { uid: "user123", displayName: "Alice Wonderland" },
-      { uid: "user456", displayName: "Bob The Builder" },
-      { uid: "user789", displayName: "Charlie Brown" },
-    ],
-    createdAt: new Date(2023, 10, 15),
-  },
-  {
-    id: "group2",
-    name: "GeoGuessr Pros",
-    creatorId: "user456",
-    creatorName: "Bob The Builder",
-    gameIds: ["geoguessr", "worldle", "globle"],
-    joinCode: "GEO123",
-    members: [
-      { uid: "user456", displayName: "Bob The Builder" },
-      { uid: "user001", displayName: "Diana Prince" },
-    ],
-    createdAt: new Date(2023, 11, 1),
-  },
-  {
-    id: "group3",
-    name: "Daily Challenge Crew",
-    creatorId: "user000", // A generic creator
-    creatorName: "The Game Master",
-    gameIds: ["bandle", "emovi"],
-    joinCode: "DAILYFUN",
-    members: [
-      { uid: "user123", displayName: "Alice Wonderland" },
-      { uid: "user456", displayName: "Bob The Builder" },
-      { uid: "user789", displayName: "Charlie Brown" },
-      { uid: "user001", displayName: "Diana Prince" },
-      { uid: "user002", displayName: "Edward Nygma" },
-    ],
-    createdAt: new Date(2024, 0, 5),
-  },
-];
+// Firebase imports
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 export default function MyGroupsPage() {
   const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [userGroups, setUserGroups] = useState<PlayGroup[]>([]);
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
+  const [groupsLoading, setGroupsLoading] = useState(true);
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
-    // Simulate fetching groups for the current user
-    // In a real app, filter MOCK_GROUPS or fetch from Firestore
-    // where currentUser.uid is in group.members
-    if (currentUser) {
-      const filteredGroups = MOCK_GROUPS.filter(group => 
-        group.members.some(member => member.uid === currentUser.uid) || group.creatorId === currentUser.uid
-      );
-      // For testing, if no groups match, show all mock groups if a user is logged in
-      setUserGroups(filteredGroups.length > 0 ? filteredGroups : MOCK_GROUPS);
-    } else {
-      // For demonstration if not logged in, show all groups.
-      // In a real app, this page would likely require auth.
-      setUserGroups(MOCK_GROUPS); 
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) {
+      return; 
     }
-  }, [currentUser]);
+    
+    if (!currentUser) {
+      setUserGroups([]);
+      setGroupsLoading(false);
+      return;
+    }
+
+    setGroupsLoading(true);
+    const groupsQuery = query(collection(db, 'groups'), where('memberUids', 'array-contains', currentUser.uid));
+
+    const unsubscribe = onSnapshot(groupsQuery, (querySnapshot) => {
+      const groups: PlayGroup[] = [];
+      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
+        groups.push({ id: doc.id, ...doc.data() } as PlayGroup);
+      });
+      setUserGroups(groups);
+      setGroupsLoading(false);
+    }, (error) => {
+      console.error("Error fetching groups: ", error);
+      setGroupsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, authLoading]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -105,8 +78,12 @@ export default function MyGroupsPage() {
           </CardHeader>
         </Card>
 
-        {userGroups.length === 0 && !currentUser && (
-           <Card className="shadow-lg">
+        {authLoading || groupsLoading ? (
+          <div className="flex justify-center items-center p-10">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+        ) : !currentUser ? (
+          <Card className="shadow-lg">
             <CardContent className="p-6 text-center">
               <Info className="h-12 w-12 text-primary mx-auto mb-4" />
               <p className="text-xl text-muted-foreground">Please sign in to see your groups.</p>
@@ -115,9 +92,7 @@ export default function MyGroupsPage() {
               </Button>
             </CardContent>
           </Card>
-        )}
-
-        {userGroups.length === 0 && currentUser && (
+        ) : userGroups.length === 0 ? (
           <Card className="shadow-lg">
             <CardContent className="p-6 text-center">
               <Info className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -132,9 +107,7 @@ export default function MyGroupsPage() {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {userGroups.length > 0 && (
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {userGroups.map((group) => (
               <GroupCard key={group.id} group={group} />

@@ -2,18 +2,23 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from 'next/navigation';
+
+// Firebase imports
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LIBRARY_GAMES_DATA } from "@/lib/game-data";
-import type { LibraryGame } from "@/types";
+import { GAMES_DATA } from "@/lib/game-data";
+import type { Game as LibraryGame } from "@/types";
 import { Trophy, PlusCircle, Loader2 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useAuth } from "@/contexts/auth-context";
@@ -33,6 +38,7 @@ export default function CreateGroupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     setCurrentYear(new Date().getFullYear());
@@ -45,6 +51,7 @@ export default function CreateGroupPage() {
       selectedGames: [],
       joinCode: "",
     },
+    mode: 'onBlur',
   });
 
   const onSubmit: SubmitHandler<CreateGroupFormData> = async (data) => {
@@ -57,17 +64,48 @@ export default function CreateGroupPage() {
       return;
     }
     setIsLoading(true);
-    console.log("Create Group Data:", data);
-    console.log("Creator ID:", currentUser.uid);
-    // TODO: Implement Firestore logic to save the group
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
 
-    toast({
-      title: "Group Created (Simulated)",
-      description: `Group "${data.groupName}" with join code "${data.joinCode}" would be created. Check console for details.`,
-    });
-    form.reset();
-    setIsLoading(false);
+    try {
+      const lowerCaseJoinCode = data.joinCode.toLowerCase();
+      // Check if join code is unique before creating
+      const q = query(collection(db, "groups"), where("joinCode", "==", lowerCaseJoinCode));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        form.setError("joinCode", { type: "manual", message: "This join code is already in use. Please choose another." });
+        setIsLoading(false);
+        return;
+      }
+
+      const newGroup = {
+        name: data.groupName,
+        gameIds: data.selectedGames,
+        joinCode: lowerCaseJoinCode,
+        creatorId: currentUser.uid,
+        creatorName: currentUser.displayName,
+        members: [{ uid: currentUser.uid, displayName: currentUser.displayName }],
+        memberUids: [currentUser.uid], // Add UID to the queryable array
+        createdAt: serverTimestamp(),
+      };
+      
+      const groupDocRef = await addDoc(collection(db, "groups"), newGroup);
+
+      toast({
+        title: "Group Created Successfully!",
+        description: `Group "${data.groupName}" has been created.`,
+      });
+      
+      router.push(`/my-groups/${groupDocRef.id}`);
+
+    } catch (error) {
+        console.error("Error creating group:", error);
+        toast({
+            title: "Error Creating Group",
+            description: "Something went wrong. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -133,7 +171,7 @@ export default function CreateGroupPage() {
                     </FormDescription>
                   <ScrollArea className="h-72 w-full rounded-md border p-4 mt-2">
                     <div className="space-y-3">
-                      {LIBRARY_GAMES_DATA.map((game: LibraryGame) => (
+                      {GAMES_DATA.map((game: LibraryGame) => (
                         <FormField
                           key={game.id}
                           control={form.control}
@@ -144,13 +182,16 @@ export default function CreateGroupPage() {
                                 <Checkbox
                                   checked={field.value?.includes(game.id)}
                                   onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...(field.value || []), game.id])
-                                      : field.onChange(
-                                          (field.value || []).filter(
-                                            (value) => value !== game.id
-                                          )
-                                        );
+                                    const currentSelection = field.value || [];
+                                    if (checked) {
+                                      if (currentSelection.length < 10) {
+                                         field.onChange([...currentSelection, game.id]);
+                                      } else {
+                                        toast({ title: "Limit Reached", description: "You can only select up to 10 games.", variant: "destructive" });
+                                      }
+                                    } else {
+                                      field.onChange(currentSelection.filter((value) => value !== game.id));
+                                    }
                                   }}
                                 />
                               </FormControl>
