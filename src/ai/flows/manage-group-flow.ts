@@ -9,7 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { adminDb } from '@/lib/firebase-admin'; // Use the Admin SDK
+import { getAdminDb } from '@/lib/firebase-admin'; // Use the Admin SDK
 import { FieldValue } from 'firebase-admin/firestore'; // Use the Admin SDK's FieldValue
 
 // Input schema for creating a group
@@ -60,6 +60,8 @@ export async function joinPlayGroup(input: JoinGroupInput): Promise<JoinGroupOut
   return joinGroupFlow(input);
 }
 
+const SERVER_CONFIG_ERROR = "Server configuration error: The FIREBASE_SERVICE_ACCOUNT environment variable is not set. Please add it to your .env file and restart the server.";
+
 // Genkit flow for creating a group
 const createGroupFlow = ai.defineFlow(
   {
@@ -68,6 +70,11 @@ const createGroupFlow = ai.defineFlow(
     outputSchema: CreateGroupOutputSchema,
   },
   async (input) => {
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+      return { error: SERVER_CONFIG_ERROR };
+    }
+
     const { groupName, selectedGames, joinCode, user } = input;
     const lowerCaseJoinCode = joinCode.toLowerCase();
 
@@ -105,6 +112,11 @@ const joinGroupFlow = ai.defineFlow(
         outputSchema: JoinGroupOutputSchema,
     },
     async (input) => {
+        const adminDb = getAdminDb();
+        if (!adminDb) {
+            return { error: SERVER_CONFIG_ERROR };
+        }
+
         const { joinCode, user } = input;
         const lowerCaseJoinCode = joinCode.toLowerCase();
         

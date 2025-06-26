@@ -1,29 +1,39 @@
-import { initializeApp, getApps, App, cert, getApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp, getApps, App, cert, getApp, ServiceAccount } from 'firebase-admin/app';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import 'server-only';
 
-// This function safely parses the service account key from the environment variable.
-function getServiceAccount() {
+function getServiceAccount(): ServiceAccount | null {
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!serviceAccountJson) {
-    throw new Error('The FIREBASE_SERVICE_ACCOUNT environment variable is not set. Please see the instructions in the terminal.');
+  if (!serviceAccountJson || serviceAccountJson.trim() === '') {
+    return null;
   }
   try {
     return JSON.parse(serviceAccountJson);
   } catch (e) {
-    console.error("Error parsing FIREBASE_SERVICE_ACCOUNT:", e);
-    throw new Error('Failed to parse the FIREBASE_SERVICE_ACCOUNT. Please ensure it is a valid JSON string.');
+    console.error("Error parsing FIREBASE_SERVICE_ACCOUNT. Ensure it's a valid JSON string copied from the Firebase console.", e);
+    return null;
   }
 }
 
-// Check if the admin app is already initialized.
-// This prevents re-initialization errors in Next.js hot-reloading environments.
-const adminApp: App = getApps().find(app => app.name === 'admin')
-  ? getApp('admin')
-  : initializeApp({
-      credential: cert(getServiceAccount())
-    }, 'admin');
+let adminDbInstance: Firestore | null = null;
 
-const adminDb = getFirestore(adminApp);
+export function getAdminDb(): Firestore | null {
+  if (adminDbInstance) {
+    return adminDbInstance;
+  }
 
-export { adminDb };
+  const serviceAccount = getServiceAccount();
+  if (!serviceAccount) {
+    console.error("CRITICAL: FIREBASE_SERVICE_ACCOUNT environment variable not set or invalid. Server-side functionality will fail.");
+    return null;
+  }
+  
+  const adminApp: App = getApps().find(app => app.name === 'admin')
+    ? getApp('admin')
+    : initializeApp({
+        credential: cert(serviceAccount)
+      }, 'admin');
+
+  adminDbInstance = getFirestore(adminApp);
+  return adminDbInstance;
+}
