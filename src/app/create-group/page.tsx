@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -16,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GAMES_DATA } from "@/lib/game-data";
-import type { Game as LibraryGame } from "@/types";
+import type { Game } from "@/types";
 import { Trophy, PlusCircle, Loader2 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { useAuth } from "@/contexts/auth-context";
@@ -163,7 +164,7 @@ export default function CreateGroupPage() {
                     </FormDescription>
                   <ScrollArea className="h-72 w-full rounded-md border p-4 mt-2">
                     <div className="space-y-3">
-                      {GAMES_DATA.map((game: LibraryGame) => (
+                      {GAMES_DATA.map((game: Game) => (
                         <FormField
                           key={game.id}
                           control={form.control}
