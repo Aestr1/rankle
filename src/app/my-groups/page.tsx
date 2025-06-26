@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -10,20 +9,16 @@ import { Trophy, ShieldCheck, Info, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import type { PlayGroup } from '@/types';
 import { GroupCard } from '@/components/group-card';
+import { AppFooter } from '@/components/app-footer';
 
 // Firebase imports
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 export default function MyGroupsPage() {
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [userGroups, setUserGroups] = useState<PlayGroup[]>([]);
   const { currentUser, loading: authLoading } = useAuth();
   const [groupsLoading, setGroupsLoading] = useState(true);
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
 
   useEffect(() => {
     if (authLoading) {
@@ -115,9 +110,7 @@ export default function MyGroupsPage() {
           </div>
         )}
       </main>
-      <footer className="text-center p-6 text-muted-foreground border-t">
-        {currentYear ? `© ${currentYear} Rankle. Sharpen your mind, one game at a time.` : 'Loading year...'}
-      </footer>
+      <AppFooter />
     </div>
   );
 }

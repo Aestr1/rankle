@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,6 +19,7 @@ import { AuthButton } from "@/components/auth-button";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { AppFooter } from '@/components/app-footer';
 
 const joinGroupSchema = z.object({
   joinCode: z.string().min(1, { message: "Join code cannot be empty." }),
@@ -28,15 +28,10 @@ const joinGroupSchema = z.object({
 type JoinGroupFormData = z.infer<typeof joinGroupSchema>;
 
 export default function JoinGroupPage() {
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
 
   const form = useForm<JoinGroupFormData>({
     resolver: zodResolver(joinGroupSchema),
@@ -164,9 +159,7 @@ export default function JoinGroupPage() {
           </Form>
         </Card>
       </main>
-      <footer className="text-center p-6 text-muted-foreground border-t">
-        {currentYear ? `© ${currentYear} Rankle. Sharpen your mind, one game at a time.` : 'Loading year...'}
-      </footer>
+      <AppFooter />
     </div>
   );
 }

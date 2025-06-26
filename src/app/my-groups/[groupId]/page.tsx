@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -16,6 +15,7 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from "firebase/firestore";
 import { GroupLeaderboard } from '@/components/group-leaderboard';
 import { useToast } from '@/hooks/use-toast';
+import { AppFooter } from '@/components/app-footer';
 
 interface GroupCompletedGameInfo {
   id: string; // game id
@@ -23,7 +23,6 @@ interface GroupCompletedGameInfo {
 }
 
 export default function IndividualGroupPage() {
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [group, setGroup] = useState<PlayGroup | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser } = useAuth();
@@ -35,10 +34,6 @@ export default function IndividualGroupPage() {
   // This state now tracks completion for the session, not for data persistence.
   const [completedGroupGames, setCompletedGroupGames] = useState<GroupCompletedGameInfo[]>([]);
   
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
-
   useEffect(() => {
     if (!groupId) return;
 
@@ -125,9 +120,7 @@ export default function IndividualGroupPage() {
             </CardContent>
           </Card>
         </main>
-         <footer className="text-center p-6 text-muted-foreground border-t">
-            {currentYear ? `© ${currentYear} Rankle. Sharpen your mind, one game at a time.` : 'Loading year...'}
-        </footer>
+         <AppFooter />
       </div>
     );
   }
@@ -226,9 +219,7 @@ export default function IndividualGroupPage() {
         </div>
 
       </main>
-      <footer className="text-center p-6 text-muted-foreground border-t">
-        {currentYear ? `© ${currentYear} Rankle. Sharpen your mind, one game at a time.` : 'Loading year...'}
-      </footer>
+      <AppFooter />
     </div>
   );
 }

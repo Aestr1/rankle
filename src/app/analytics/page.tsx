@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { UserGameChart } from '@/components/user-game-chart';
 import { AuthButton } from '@/components/auth-button';
 import { Button } from '@/components/ui/button';
+import { AppFooter } from '@/components/app-footer';
 
 interface GameDataMap {
     [gameId: string]: {
@@ -151,9 +152,7 @@ export default function AnalyticsPage() {
                 </Card>
                 {content()}
             </main>
-            <footer className="text-center p-6 text-muted-foreground border-t">
-                © {new Date().getFullYear()} Rankle. Sharpen your mind, one game at a time.
-            </footer>
+            <AppFooter />
         </div>
     );
 }
