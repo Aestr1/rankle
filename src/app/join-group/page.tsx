@@ -6,9 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from 'next/navigation';
 
-// Firebase imports
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, updateDoc, arrayUnion, doc } from "firebase/firestore";
+// Server flow for joining a group
+import { joinPlayGroup, type JoinGroupInput } from '@/ai/flows/manage-group-flow';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,44 +51,38 @@ export default function JoinGroupPage() {
     setIsLoading(true);
     
     try {
-        const lowerCaseJoinCode = data.joinCode.toLowerCase();
-        const groupsRef = collection(db, "groups");
-        const q = query(groupsRef, where("joinCode", "==", lowerCaseJoinCode));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            toast({
-                title: "Group Not Found",
-                description: `Could not find a group with code "${data.joinCode}". Please check the code and try again.`,
-                variant: "destructive",
-            });
-        } else {
-            const groupDoc = querySnapshot.docs[0];
-            const groupData = groupDoc.data();
-
-            if (groupData.memberUids.includes(currentUser.uid)) {
-                toast({
-                    title: "Already in Group",
-                    description: `You are already a member of "${groupData.name}".`,
-                });
-                router.push(`/my-groups/${groupDoc.id}`);
-                return;
-            }
-
-            await updateDoc(doc(db, "groups", groupDoc.id), {
-                members: arrayUnion({
-                    uid: currentUser.uid,
-                    displayName: currentUser.displayName,
-                }),
-                memberUids: arrayUnion(currentUser.uid)
-            });
-
-            toast({
-                title: "Successfully Joined Group!",
-                description: `You are now a member of "${groupData.name}".`,
-            });
-            router.push(`/my-groups/${groupDoc.id}`);
+      const input: JoinGroupInput = {
+        joinCode: data.joinCode,
+        user: {
+            uid: currentUser.uid,
+            displayName: currentUser.displayName
         }
+      };
+
+      const result = await joinPlayGroup(input);
+
+      if (result.error) {
+          toast({
+              title: "Error Joining Group",
+              description: result.error,
+              variant: "destructive",
+          });
+      } else if (result.groupId) {
+          if (result.alreadyInGroup) {
+                toast({
+                  title: "Already in Group",
+                  description: `You are already a member of "${result.groupName}".`,
+              });
+          } else {
+              toast({
+                  title: "Successfully Joined Group!",
+                  description: `You are now a member of "${result.groupName}".`,
+              });
+          }
+          router.push(`/my-groups/${result.groupId}`);
+      } else {
+          throw new Error("Joining group failed unexpectedly.");
+      }
     } catch (error) {
         console.error("Error joining group:", error);
         toast({

@@ -6,9 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from 'next/navigation';
 
-// Firebase imports
-import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+// Server flow for creating a group
+import { createPlayGroup, type CreateGroupInput } from '@/ai/flows/manage-group-flow';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,35 +60,33 @@ export default function CreateGroupPage() {
     setIsLoading(true);
 
     try {
-      const lowerCaseJoinCode = data.joinCode.toLowerCase();
-      // Check if join code is unique before creating
-      const q = query(collection(db, "groups"), where("joinCode", "==", lowerCaseJoinCode));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        form.setError("joinCode", { type: "manual", message: "This join code is already in use. Please choose another." });
+      const input: CreateGroupInput = {
+        groupName: data.groupName,
+        selectedGames: data.selectedGames,
+        joinCode: data.joinCode,
+        user: {
+          uid: currentUser.uid,
+          displayName: currentUser.displayName
+        }
+      };
+
+      const result = await createPlayGroup(input);
+      
+      if (result.error) {
+        form.setError("joinCode", { type: "manual", message: result.error });
         setIsLoading(false);
         return;
       }
-
-      const newGroup = {
-        name: data.groupName,
-        gameIds: data.selectedGames,
-        joinCode: lowerCaseJoinCode,
-        creatorId: currentUser.uid,
-        creatorName: currentUser.displayName,
-        members: [{ uid: currentUser.uid, displayName: currentUser.displayName }],
-        memberUids: [currentUser.uid], // Add UID to the queryable array
-        createdAt: serverTimestamp(),
-      };
       
-      const groupDocRef = await addDoc(collection(db, "groups"), newGroup);
-
-      toast({
-        title: "Group Created Successfully!",
-        description: `Group "${data.groupName}" has been created.`,
-      });
-      
-      router.push(`/my-groups/${groupDocRef.id}`);
+      if (result.groupId) {
+        toast({
+            title: "Group Created Successfully!",
+            description: `Group "${data.groupName}" has been created.`,
+        });
+        router.push(`/my-groups/${result.groupId}`);
+      } else {
+        throw new Error("Group creation failed unexpectedly.");
+      }
 
     } catch (error) {
         console.error("Error creating group:", error);
