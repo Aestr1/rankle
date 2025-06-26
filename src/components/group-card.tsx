@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { PlayGroup } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, UserCircle, BarChart3, Landmark, CalendarDays, KeyRound } from 'lucide-react';
+import { Users, UserCircle, BarChart3, CalendarDays, KeyRound } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface GroupCardProps {
@@ -16,6 +16,11 @@ export function GroupCard({ group }: GroupCardProps) {
   const memberDisplayLimit = 3;
   const displayedMembers = group.members.slice(0, memberDisplayLimit);
   const remainingMembersCount = group.members.length - memberDisplayLimit;
+
+  // Firestore timestamps need to be converted with .toDate()
+  const formattedDate = group.createdAt && typeof group.createdAt.toDate === 'function' 
+    ? format(group.createdAt.toDate(), 'MMM d, yyyy') 
+    : 'N/A';
 
   return (
     <Link 
@@ -67,7 +72,7 @@ export function GroupCard({ group }: GroupCardProps) {
           </div>
           <div className="flex items-center w-full">
              <CalendarDays className="mr-2 h-4 w-4" />
-            Created: {group.createdAt ? format(new Date(group.createdAt), 'MMM d, yyyy') : 'N/A'}
+            Created: {formattedDate}
           </div>
         </CardFooter>
       </Card>
