@@ -1,4 +1,5 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/validate-score.ts';
+// AI flows can be imported here to be accessible for development.
+// e.g., import '@/ai/flows/my-flow.ts';

@@ -21,12 +21,11 @@ export function AboutSection() {
           <ul className="list-disc pl-6 space-y-2">
             <li>Browse the list of daily games.</li>
             <li>Click "Play Game" to open the game on its official website.</li>
-            <li>Play the game and copy your score.</li>
-            <li>Paste your score into the input field on the game card here and hit "Submit".</li>
-            <li>Our AI will give a quick check on your score, and if it seems reasonable, your game will be marked as complete for the day!</li>
+            <li>After playing, enter your score in the input field on the game card here.</li>
+            <li>Click "Submit" to save your score to your personal analytics and any group leaderboards.</li>
           </ul>
           <p>
-            Challenge yourself, track your progress, and see how you stack up! Leaderboards and detailed analytics are coming soon.
+            The app currently operates on an honor system. Challenge yourself, track your progress, and see how you stack up against your friends!
           </p>
         </CardContent>
       </Card>
