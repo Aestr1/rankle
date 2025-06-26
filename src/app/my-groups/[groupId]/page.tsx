@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -25,17 +26,19 @@ interface GroupCompletedGameInfo {
 export default function IndividualGroupPage() {
   const [group, setGroup] = useState<PlayGroup | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const params = useParams();
   const groupId = params.groupId as string;
   const [key, setKey] = useState(0); // Key to force-rerender leaderboard
   const { toast } = useToast();
 
-  // This state now tracks completion for the session, not for data persistence.
   const [completedGroupGames, setCompletedGroupGames] = useState<GroupCompletedGameInfo[]>([]);
   
   useEffect(() => {
-    if (!groupId) return;
+    if (!groupId || !currentUser) {
+      if (!authLoading) setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     const groupDocRef = doc(db, "groups", groupId);
@@ -55,17 +58,20 @@ export default function IndividualGroupPage() {
       setIsLoading(false);
     }, (error) => {
         console.error("Error fetching group details:", error);
+        toast({
+            title: "Access Denied",
+            description: "You might not be a member of this group, or it may not exist.",
+            variant: "destructive",
+        });
         setGroup(null);
         setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, [groupId]);
+  }, [groupId, currentUser, authLoading, toast]);
 
   const handleGroupGameComplete = useCallback((gameId: string, score: number) => {
-    // Update session state to reflect completion in the UI instantly
     setCompletedGroupGames(prev => [...prev, { id: gameId, score }]);
-    // Force the leaderboard to re-fetch data
     setKey(prevKey => prevKey + 1);
   }, []);
 
@@ -79,7 +85,26 @@ export default function IndividualGroupPage() {
     });
   };
 
-  if (isLoading) {
+  const pageHeader = (title: string | React.ReactNode = group?.name || 'Group') => (
+    <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center">
+             <Button variant="ghost" size="icon" asChild className="mr-2">
+                <Link href="/my-groups" aria-label="Back to My Groups">
+                    <ArrowLeft className="h-6 w-6 text-primary" />
+                </Link>
+            </Button>
+            <Trophy className="h-10 w-10 text-primary mr-3" />
+            <h1 className="text-4xl font-headline text-primary truncate max-w-xs md:max-w-md lg:max-w-lg" title={typeof title === 'string' ? title : undefined}>
+                {title}
+            </h1>
+          </div>
+          <AuthButton />
+        </div>
+      </header>
+  );
+
+  if (authLoading || isLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-background items-center justify-center">
         <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
@@ -88,18 +113,34 @@ export default function IndividualGroupPage() {
     );
   }
 
+  if (!currentUser) {
+     return (
+        <div className="flex flex-col min-h-screen bg-background">
+            {pageHeader("View Group")}
+            <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center justify-center">
+                <Card className="w-full max-w-lg text-center shadow-xl">
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-center text-3xl font-headline text-primary">
+                            <Info className="mr-3 h-8 w-8" />
+                            Sign In Required
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-lg text-muted-foreground mb-6">
+                            Please sign in to view your group details.
+                        </p>
+                    </CardContent>
+                </Card>
+            </main>
+            <AppFooter />
+        </div>
+     );
+  }
+
   if (!group) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
-         <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-          <div className="container mx-auto flex items-center justify-between">
-            <Link href="/" className="flex items-center">
-              <Trophy className="h-10 w-10 text-primary mr-3" />
-              <h1 className="text-4xl font-headline text-primary">Rankle</h1>
-            </Link>
-            <AuthButton />
-          </div>
-        </header>
+         {pageHeader("Group Not Found")}
         <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center justify-center">
           <Card className="w-full max-w-lg text-center shadow-xl">
             <CardHeader>
@@ -110,7 +151,7 @@ export default function IndividualGroupPage() {
             </CardHeader>
             <CardContent>
               <p className="text-lg text-muted-foreground mb-6">
-                The group you are looking for does not exist or could not be loaded.
+                The group you are looking for does not exist or you may not have permission to view it.
               </p>
               <Button asChild variant="outline">
                 <Link href="/my-groups">
@@ -129,20 +170,7 @@ export default function IndividualGroupPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-             <Button variant="ghost" size="icon" asChild className="mr-2">
-                <Link href="/my-groups" aria-label="Back to My Groups">
-                    <ArrowLeft className="h-6 w-6 text-primary" />
-                </Link>
-            </Button>
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary truncate max-w-xs md:max-w-md lg:max-w-lg" title={group.name}>{group.name}</h1>
-          </div>
-          <AuthButton />
-        </div>
-      </header>
+      {pageHeader()}
       <main className="flex-grow container mx-auto p-4 md:p-8 space-y-8">
         <Card className="shadow-lg">
           <CardHeader>
