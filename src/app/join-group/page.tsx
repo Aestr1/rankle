@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -67,7 +68,11 @@ export default function JoinGroupPage() {
               description: result.error,
               variant: "destructive",
           });
-      } else if (result.groupId) {
+          setIsLoading(false);
+          return;
+      } 
+      
+      if (result.groupId) {
           if (result.alreadyInGroup) {
                 toast({
                   title: "Already in Group",
@@ -79,6 +84,7 @@ export default function JoinGroupPage() {
                   description: `You are now a member of "${result.groupName}".`,
               });
           }
+          setIsLoading(false);
           router.push(`/my-groups/${result.groupId}`);
       } else {
           throw new Error("Joining group failed unexpectedly.");
@@ -90,7 +96,6 @@ export default function JoinGroupPage() {
             description: "Something went wrong. Please try again.",
             variant: "destructive",
         });
-    } finally {
         setIsLoading(false);
     }
   };

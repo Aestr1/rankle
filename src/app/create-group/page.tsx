@@ -84,6 +84,7 @@ export default function CreateGroupPage() {
             title: "Group Created Successfully!",
             description: `Group "${data.groupName}" has been created.`,
         });
+        setIsLoading(false);
         router.push(`/my-groups/${result.groupId}`);
       } else {
         throw new Error("Group creation failed unexpectedly.");
@@ -96,7 +97,6 @@ export default function CreateGroupPage() {
             description: "Something went wrong. Please try again.",
             variant: "destructive",
         });
-    } finally {
         setIsLoading(false);
     }
   };
