@@ -9,8 +9,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, arrayUnion, doc } from "firebase/firestore";
+import { adminDb } from '@/lib/firebase-admin'; // Use the Admin SDK
+import { FieldValue } from 'firebase-admin/firestore'; // Use the Admin SDK's FieldValue
 
 // Input schema for creating a group
 const CreateGroupInputSchema = z.object({
@@ -71,9 +71,11 @@ const createGroupFlow = ai.defineFlow(
     const { groupName, selectedGames, joinCode, user } = input;
     const lowerCaseJoinCode = joinCode.toLowerCase();
 
-    // 1. Check for unique join code (runs with server permissions)
-    const q = query(collection(db, "groups"), where("joinCode", "==", lowerCaseJoinCode));
-    const querySnapshot = await getDocs(q);
+    // Use adminDb to bypass client-side security rules for this check
+    const groupsRef = adminDb.collection("groups");
+    const q = groupsRef.where("joinCode", "==", lowerCaseJoinCode);
+    const querySnapshot = await q.get();
+
     if (!querySnapshot.empty) {
       return { error: "This join code is already in use. Please choose another." };
     }
@@ -87,10 +89,10 @@ const createGroupFlow = ai.defineFlow(
       creatorName: user.displayName,
       members: [{ uid: user.uid, displayName: user.displayName }],
       memberUids: [user.uid],
-      createdAt: serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(), // Use admin FieldValue
     };
 
-    const groupDocRef = await addDoc(collection(db, "groups"), newGroup);
+    const groupDocRef = await groupsRef.add(newGroup);
     return { groupId: groupDocRef.id };
   }
 );
@@ -106,9 +108,10 @@ const joinGroupFlow = ai.defineFlow(
         const { joinCode, user } = input;
         const lowerCaseJoinCode = joinCode.toLowerCase();
         
-        const groupsRef = collection(db, "groups");
-        const q = query(groupsRef, where("joinCode", "==", lowerCaseJoinCode));
-        const querySnapshot = await getDocs(q);
+        // Use adminDb to bypass client-side security rules for this check
+        const groupsRef = adminDb.collection("groups");
+        const q = groupsRef.where("joinCode", "==", lowerCaseJoinCode);
+        const querySnapshot = await q.get();
 
         if (querySnapshot.empty) {
             return { error: `Could not find a group with code "${joinCode}". Please check the code and try again.` };
@@ -125,12 +128,12 @@ const joinGroupFlow = ai.defineFlow(
             };
         }
 
-        await updateDoc(doc(db, "groups", groupDoc.id), {
-            members: arrayUnion({
+        await groupDoc.ref.update({
+            members: FieldValue.arrayUnion({
                 uid: user.uid,
                 displayName: user.displayName,
             }),
-            memberUids: arrayUnion(user.uid)
+            memberUids: FieldValue.arrayUnion(user.uid)
         });
 
         return {
