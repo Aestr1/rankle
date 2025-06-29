@@ -80,38 +80,33 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
     case 'connections': {
         const lines = shareText.split(/\r\n?|\n/);
         let mistakeCount = 0;
-        let emojiGridRowsFound = false;
+        let solvedGroupCount = 0;
+        const validEmojis = ['🟨', '🟩', '🟦', '🟪'];
 
         for (const line of lines) {
             const trimmedLine = line.trim();
-            // Check if it's a 4-emoji line
-            if (/^[🟨🟩🟦🟪]{4}$/u.test(trimmedLine)) {
-                emojiGridRowsFound = true;
-                // Check if all emojis in the line are the same
-                // A line of mixed colors is a mistake.
-                const firstEmoji = trimmedLine[0];
-                let isMistake = false;
-                // Using Array.from to correctly iterate over Unicode characters (emojis)
-                for (const emoji of Array.from(trimmedLine)) {
-                    if (emoji !== firstEmoji) {
-                        isMistake = true;
-                        break;
-                    }
-                }
+            const chars = Array.from(trimmedLine);
+
+            // Check if the line looks like a 4-emoji grid line
+            if (chars.length === 4 && chars.every(char => validEmojis.includes(char))) {
+                const firstEmoji = chars[0];
+                const isSolvedGroup = chars.every(emoji => emoji === firstEmoji);
                 
-                if (isMistake) {
+                if (isSolvedGroup) {
+                    solvedGroupCount++;
+                } else {
                     mistakeCount++;
                 }
             }
         }
 
-        // Only return a score if we found what looks like a Connections grid.
-        // This prevents misinterpreting other text as a 0-mistake game.
-        if (emojiGridRowsFound) {
+        // A valid submission for parsing must contain the 4 solved groups.
+        // This prevents parsing incomplete or failed game grids.
+        if (solvedGroupCount === 4) {
             return mistakeCount;
         }
-
-        // Fallback for just entering the number of mistakes (0-4)
+        
+        // Fallback for users who just enter the number of mistakes (0-4)
         const directMistakes = parseFloat(shareText);
         if (!isNaN(directMistakes) && directMistakes >= 0 && directMistakes <= 4) {
             return directMistakes;
