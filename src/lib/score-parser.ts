@@ -22,12 +22,15 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
   }
 
   // For games that use a text/emoji format (e.g., Wordle, Worldle).
-  // The common pattern is a number of guesses out of a total, like "3/6".
-  const guessMatch = shareText.match(/(\d)\/6/);
+  // The common pattern is a number of guesses out of a total, like "3/6" or "X/6".
+  const guessMatch = shareText.match(/([1-6X])\/6/);
   if (guessMatch && guessMatch[1]) {
-    const guesses = parseInt(guessMatch[1], 10);
+    const result = guessMatch[1];
+    if (result === 'X') {
+      return 7; // Represents a fail state, more than 6 guesses
+    }
+    const guesses = parseInt(result, 10);
     if (!isNaN(guesses)) {
-      // For these games, the raw score IS the number of guesses.
       return guesses;
     }
   }

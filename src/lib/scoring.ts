@@ -19,7 +19,12 @@ export function normalizeScore(gameId: string, rawScore: number): number {
         case 'worldle':
         case 'emovi':
         case 'bandle':
-             normalizedScore = Math.max(0, 100 - (rawScore - 1) * 20);
+             if (rawScore > 6) { // Fail state (e.g., parser returns 7 for 'X/6')
+                normalizedScore = 0;
+             } else {
+                // This gives a range from 100 (1 guess) to 20 (6 guesses)
+                normalizedScore = 100 - (rawScore - 1) * 16;
+             }
              break;
 
         // Games where score is a percentage of a max score
