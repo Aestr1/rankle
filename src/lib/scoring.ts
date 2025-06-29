@@ -27,7 +27,6 @@ export function normalizeScore(gameId: string, rawScore: number): number {
         // Games where a lower number of guesses is better (out of 6)
         case 'wordle':
         case 'worldle':
-        case 'bandle':
              // This scoring curve is weighted to reward an average score (4/6) more highly.
              const scoreMap: {[key: number]: number} = {
                  1: 100, // Perfect
@@ -46,10 +45,6 @@ export function normalizeScore(gameId: string, rawScore: number): number {
             // Max score is 50,000 based on share text format
             normalizedScore = (rawScore / 50000) * 100;
             break;
-        case 'geoguessr':
-            // Max score for daily is 25,000
-            normalizedScore = (rawScore / 25000) * 100;
-            break;
         
         // Connections: raw score is number of mistakes (0-4)
         case 'connections':
@@ -67,11 +62,6 @@ export function normalizeScore(gameId: string, rawScore: number): number {
         // Globle: Lower number of guesses is better (unlimited guesses)
         case 'globle':
             normalizedScore = Math.max(0, 100 - (rawScore - 1) * 4);
-            break;
-
-        // WikiSpeedrun: Time-based (lower is better, in seconds)
-        case 'wikispeedrun':
-            normalizedScore = Math.max(0, 100 - rawScore / 5);
             break;
 
         default:

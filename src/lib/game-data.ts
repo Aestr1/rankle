@@ -1,6 +1,6 @@
 
 import type { Game } from '@/types';
-import { Timer, BookOpenText, Globe, Film, Globe2, Music, Puzzle, MapPin, Zap, LayoutGrid } from 'lucide-react';
+import { Timer, BookOpenText, Globe, Film, Globe2, Puzzle } from 'lucide-react';
 
 export const GAMES_DATA: Game[] = [
   {
@@ -54,16 +54,6 @@ export const GAMES_DATA: Game[] = [
     scoreInputType: 'text',
   },
   {
-    id: 'bandle',
-    name: 'Bandle',
-    description: 'Paste your full "Share" text with the emoji grid.',
-    link: 'https://bandle.app/',
-    icon: Music,
-    averageScore: 3,
-    examplePreviousScores: [2, 4, 1],
-    scoreInputType: 'text',
-  },
-  {
     id: 'connections',
     name: 'Connections',
     description: 'Paste your full "Share" text with the emoji grid.',
@@ -72,25 +62,5 @@ export const GAMES_DATA: Game[] = [
     averageScore: 1,
     examplePreviousScores: [0, 1, 2, 0],
     scoreInputType: 'text',
-  },
-  {
-    id: 'geoguessr',
-    name: 'GeoGuessr Daily',
-    description: 'Enter your final score (e.g., 18000).',
-    link: 'https://www.geoguessr.com/daily-challenges',
-    icon: MapPin,
-    averageScore: 18000,
-    examplePreviousScores: [15000, 20000, 17500],
-    scoreInputType: 'number',
-  },
-  {
-    id: 'wikispeedrun',
-    name: 'Wikipedia Speedrun',
-    description: 'Enter your time in seconds.',
-    link: 'https://www.wikispeedruns.com/',
-    icon: Zap,
-    averageScore: 120,
-    examplePreviousScores: [100, 150, 110],
-    scoreInputType: 'number',
   },
 ];

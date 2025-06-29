@@ -44,8 +44,7 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
     }
 
     case 'wordle':
-    case 'worldle':
-    case 'bandle': {
+    case 'worldle': {
       // Look for "X/6" format
       const guessMatch = shareText.match(/([1-6X])\/6/);
       if (guessMatch && guessMatch[1]) {
@@ -107,9 +106,7 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
         return null;
     }
 
-    // Default to direct number parsing for these and any other games
-    case 'geoguessr':
-    case 'wikispeedrun':
+    // Default to direct number parsing for any other games
     default: {
       const directScore = parseFloat(shareText);
       return isNaN(directScore) ? null : directScore;
