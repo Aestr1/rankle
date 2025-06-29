@@ -5,6 +5,8 @@
  *
  * - createPlayGroup - Creates a new group, ensuring the join code is unique.
  * - joinPlayGroup - Allows a user to join an existing group using a join code.
+ * - deleteGroup - Allows the group creator to delete the group.
+ * - leaveGroup - Allows a member to leave a group.
  */
 
 import { ai } from '@/ai/genkit';
@@ -50,6 +52,28 @@ const JoinGroupOutputSchema = z.object({
 });
 export type JoinGroupOutput = z.infer<typeof JoinGroupOutputSchema>;
 
+// Input schema for deleting a group
+const DeleteGroupInputSchema = z.object({
+  groupId: z.string(),
+  userId: z.string(),
+});
+export type DeleteGroupInput = z.infer<typeof DeleteGroupInputSchema>;
+
+// Output schema for deleting/leaving
+const MutateGroupOutputSchema = z.object({
+  success: z.boolean(),
+  error: z.string().optional(),
+});
+export type MutateGroupOutput = z.infer<typeof MutateGroupOutputSchema>;
+
+// Input schema for leaving a group
+const LeaveGroupInputSchema = z.object({
+  groupId: z.string(),
+  userId: z.string(),
+  userDisplayName: z.string().nullable(),
+});
+export type LeaveGroupInput = z.infer<typeof LeaveGroupInputSchema>;
+
 
 // Exported functions that the client will call
 export async function createPlayGroup(input: CreateGroupInput): Promise<CreateGroupOutput> {
@@ -59,6 +83,15 @@ export async function createPlayGroup(input: CreateGroupInput): Promise<CreateGr
 export async function joinPlayGroup(input: JoinGroupInput): Promise<JoinGroupOutput> {
   return joinGroupFlow(input);
 }
+
+export async function deleteGroup(input: DeleteGroupInput): Promise<MutateGroupOutput> {
+    return deleteGroupFlow(input);
+}
+
+export async function leaveGroup(input: LeaveGroupInput): Promise<MutateGroupOutput> {
+    return leaveGroupFlow(input);
+}
+
 
 const SERVER_CONFIG_ERROR = "Server configuration error: The FIREBASE_SERVICE_ACCOUNT environment variable is not set. Please add it to your .env file and restart the server.";
 
@@ -153,4 +186,71 @@ const joinGroupFlow = ai.defineFlow(
             groupName: groupData.name,
         };
     }
+);
+
+// Genkit flow for deleting a group
+const deleteGroupFlow = ai.defineFlow(
+  {
+    name: 'deleteGroupFlow',
+    inputSchema: DeleteGroupInputSchema,
+    outputSchema: MutateGroupOutputSchema,
+  },
+  async ({ groupId, userId }) => {
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+      return { success: false, error: SERVER_CONFIG_ERROR };
+    }
+    
+    const groupRef = adminDb.collection('groups').doc(groupId);
+    const groupDoc = await groupRef.get();
+
+    if (!groupDoc.exists) {
+      return { success: false, error: 'Group not found.' };
+    }
+    
+    if (groupDoc.data()?.creatorId !== userId) {
+      return { success: false, error: 'Only the group creator can delete this group.' };
+    }
+
+    await groupRef.delete();
+    return { success: true };
+  }
+);
+
+// Genkit flow for leaving a group
+const leaveGroupFlow = ai.defineFlow(
+  {
+    name: 'leaveGroupFlow',
+    inputSchema: LeaveGroupInputSchema,
+    outputSchema: MutateGroupOutputSchema,
+  },
+  async ({ groupId, userId, userDisplayName }) => {
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+      return { success: false, error: SERVER_CONFIG_ERROR };
+    }
+    
+    const groupRef = adminDb.collection('groups').doc(groupId);
+    const groupDoc = await groupRef.get();
+
+    if (!groupDoc.exists) {
+      return { success: false, error: 'Group not found.' };
+    }
+
+    const groupData = groupDoc.data();
+    if (groupData?.creatorId === userId) {
+      return { success: false, error: 'Group creators cannot leave a group. You must delete it instead.' };
+    }
+
+    if (!groupData?.memberUids.includes(userId)) {
+      return { success: false, error: 'You are not a member of this group.' };
+    }
+
+    await groupRef.update({
+      members: FieldValue.arrayRemove({ uid: userId, displayName: userDisplayName }),
+      memberUids: FieldValue.arrayRemove(userId),
+    });
+
+    return { success: true };
+  }
 );

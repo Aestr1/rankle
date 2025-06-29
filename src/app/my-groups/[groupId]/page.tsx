@@ -3,11 +3,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useParams, useRouter } from 'next/navigation';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { AuthButton } from '@/components/auth-button';
-import { Trophy, ArrowLeft, Gamepad2, Users, BarChart3, Info, Loader2, Copy } from 'lucide-react';
+import { Trophy, ArrowLeft, Gamepad2, Users, BarChart3, Info, Loader2, Copy, Trash2, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import type { PlayGroup, Game } from '@/types';
 import { GAMES_DATA } from '@/lib/game-data';
@@ -17,6 +18,8 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { GroupLeaderboard } from '@/components/group-leaderboard';
 import { useToast } from '@/hooks/use-toast';
 import { AppFooter } from '@/components/app-footer';
+import { deleteGroup, leaveGroup } from '@/ai/flows/manage-group-flow';
+import { cn } from '@/lib/utils';
 
 interface GroupCompletedGameInfo {
   id: string; // game id
@@ -28,16 +31,25 @@ export default function IndividualGroupPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser, loading: authLoading } = useAuth();
   const params = useParams();
+  const router = useRouter();
   const groupId = params.groupId as string;
   const [key, setKey] = useState(0); // Key to force-rerender leaderboard
   const { toast } = useToast();
 
   const [completedGroupGames, setCompletedGroupGames] = useState<GroupCompletedGameInfo[]>([]);
+
+  // State for confirmation dialog
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'delete' | 'leave' | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   
   useEffect(() => {
-    if (!groupId || !currentUser) {
-      if (!authLoading) setIsLoading(false);
+    if (!groupId || authLoading) {
       return;
+    }
+    if (!currentUser) {
+        setIsLoading(false);
+        return;
     }
 
     setIsLoading(true);
@@ -84,6 +96,47 @@ export default function IndividualGroupPage() {
         });
     });
   };
+
+  const openConfirmation = (action: 'delete' | 'leave') => {
+    setConfirmAction(action);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction || !currentUser || !group) return;
+
+    setIsActionLoading(true);
+    try {
+      if (confirmAction === 'delete') {
+        const result = await deleteGroup({ groupId: group.id, userId: currentUser.uid });
+        if (result.success) {
+          toast({ title: "Group Deleted", description: "The group has been permanently deleted." });
+          router.push('/my-groups');
+        } else {
+          throw new Error(result.error);
+        }
+      } else if (confirmAction === 'leave') {
+        const result = await leaveGroup({
+          groupId: group.id,
+          userId: currentUser.uid,
+          userDisplayName: currentUser.displayName,
+        });
+        if (result.success) {
+          toast({ title: "You've Left the Group", description: `You are no longer a member of "${group.name}".` });
+          router.push('/my-groups');
+        } else {
+          throw new Error(result.error);
+        }
+      }
+    } catch (error: any) {
+      toast({ title: "Action Failed", description: error.message || "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+      setIsActionLoading(false);
+      setIsConfirmOpen(false);
+      setConfirmAction(null);
+    }
+  };
+
 
   const pageHeader = (title: string | React.ReactNode = group?.name || 'Group') => (
     <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
@@ -167,87 +220,125 @@ export default function IndividualGroupPage() {
   }
 
   const gamesToDisplay = group.selectedGamesDetails || [];
+  const isCreator = currentUser.uid === group.creatorId;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {pageHeader()}
-      <main className="flex-grow container mx-auto p-4 md:p-8 space-y-8">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-headline text-accent">
-              <Gamepad2 className="mr-3 h-7 w-7" />
-              Today's Games
-            </CardTitle>
-            <CardDescription>Play the selected games for the "{group.name}" group.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {gamesToDisplay.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {gamesToDisplay.map((game: Game) => {
-                    const completedInfo = completedGroupGames.find(cg => cg.id === game.id);
-                    return (
-                        <GameCard
-                          key={game.id}
-                          game={game}
-                          isCompleted={!!completedInfo}
-                          submittedScore={completedInfo?.score}
-                          onComplete={handleGroupGameComplete}
-                          groupId={group.id}
-                        />
-                    );
-                })}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No games have been selected for this group yet.</p>
-            )}
-          </CardContent>
-        </Card>
+    <>
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction === 'delete' ? 'Delete Group?' : 'Leave Group?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction === 'delete'
+                ? 'This action is irreversible. All group data, including scores, will be permanently deleted. Are you sure?'
+                : 'You will be removed from this group and will no longer see its games or leaderboards. Are you sure?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmAction(null)} disabled={isActionLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmAction} disabled={isActionLoading} className={cn(buttonVariants({ variant: "destructive" }))}>
+              {isActionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {confirmAction === 'delete' ? 'Delete' : 'Leave'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-2xl font-headline text-accent">
-                  <BarChart3 className="mr-3 h-7 w-7" />
-                  Today's Group Leaderboard
-                </CardTitle>
-                <CardDescription>Scores and ranks for today's date.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                 <GroupLeaderboard key={key} groupId={group.id} />
-              </CardContent>
-            </Card>
+      <div className="flex flex-col min-h-screen bg-background">
+        {pageHeader()}
+        <main className="flex-grow container mx-auto p-4 md:p-8 space-y-8">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center text-2xl font-headline text-accent">
+                <Gamepad2 className="mr-3 h-7 w-7" />
+                Today's Games
+              </CardTitle>
+              <CardDescription>Play the selected games for the "{group.name}" group.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {gamesToDisplay.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {gamesToDisplay.map((game: Game) => {
+                      const completedInfo = completedGroupGames.find(cg => cg.id === game.id);
+                      return (
+                          <GameCard
+                            key={game.id}
+                            game={game}
+                            isCompleted={!!completedInfo}
+                            submittedScore={completedInfo?.score}
+                            onComplete={handleGroupGameComplete}
+                            groupId={group.id}
+                          />
+                      );
+                  })}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No games have been selected for this group yet.</p>
+              )}
+            </CardContent>
+          </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-2xl font-headline text-accent">
-                  <Users className="mr-3 h-7 w-7" />
-                  Members ({group.members.length})
-                </CardTitle>
-                 <div className="flex items-center text-sm pt-1">
-                    <span className="text-muted-foreground">Join Code:</span>
-                    <span className="font-mono bg-muted/80 px-1.5 py-0.5 rounded text-foreground/80 ml-2">{group.joinCode}</span>
-                     <Button variant="ghost" size="icon" onClick={handleCopyCode} className="ml-1 h-7 w-7">
-                        <span className="sr-only">Copy join code</span>
-                        <Copy className="h-4 w-4" />
-                    </Button>
-                 </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-muted-foreground">
-                  {group.members.map(member => (
-                    <li key={member.uid} className="flex items-center">
-                      <span className="inline-block h-2 w-2 bg-primary rounded-full mr-2"></span>
-                      {member.displayName || member.uid}
-                      {member.uid === group.creatorId && <span className="ml-2 text-xs font-semibold text-accent">(Creator)</span>}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-2xl font-headline text-accent">
+                    <BarChart3 className="mr-3 h-7 w-7" />
+                    Today's Group Leaderboard
+                  </CardTitle>
+                  <CardDescription>Scores and ranks for today's date.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <GroupLeaderboard key={key} groupId={group.id} />
+                </CardContent>
+              </Card>
 
-      </main>
-      <AppFooter />
-    </div>
+              <Card className="shadow-lg flex flex-col">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-2xl font-headline text-accent">
+                    <Users className="mr-3 h-7 w-7" />
+                    Members ({group.members.length})
+                  </CardTitle>
+                   <div className="flex items-center text-sm pt-1">
+                      <span className="text-muted-foreground">Join Code:</span>
+                      <span className="font-mono bg-muted/80 px-1.5 py-0.5 rounded text-foreground/80 ml-2">{group.joinCode}</span>
+                       <Button variant="ghost" size="icon" onClick={handleCopyCode} className="ml-1 h-7 w-7">
+                          <span className="sr-only">Copy join code</span>
+                          <Copy className="h-4 w-4" />
+                      </Button>
+                   </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <ul className="space-y-2 text-muted-foreground">
+                    {group.members.map(member => (
+                      <li key={member.uid} className="flex items-center">
+                        <span className="inline-block h-2 w-2 bg-primary rounded-full mr-2"></span>
+                        {member.displayName || member.uid}
+                        {member.uid === group.creatorId && <span className="ml-2 text-xs font-semibold text-accent">(Creator)</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                 <CardFooter>
+                    {isCreator ? (
+                        <Button variant="destructive" className="w-full" onClick={() => openConfirmation('delete')}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete Group
+                        </Button>
+                    ) : (
+                        <Button variant="destructive" className="w-full" onClick={() => openConfirmation('leave')}>
+                           <LogOut className="mr-2 h-4 w-4" /> Leave Group
+                        </Button>
+                    )}
+                </CardFooter>
+              </Card>
+          </div>
+
+        </main>
+        <AppFooter />
+      </div>
+    </>
   );
 }
