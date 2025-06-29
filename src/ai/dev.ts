@@ -6,3 +6,4 @@ config();
 // e.g., import '@/ai/flows/my-flow.ts';
 import '@/ai/flows/manage-group-flow.ts';
 import '@/ai/flows/friends-flow.ts';
+import '@/ai/flows/submit-feedback-flow.ts';

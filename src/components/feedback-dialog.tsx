@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,6 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Send } from 'lucide-react';
+import { submitFeedback, type SubmitFeedbackInput } from '@/ai/flows/submit-feedback-flow';
+import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface FeedbackDialogProps {
   open: boolean;
@@ -34,10 +37,11 @@ const feedbackSchema = z.object({
 
 type FeedbackFormData = z.infer<typeof feedbackSchema>;
 
-// IMPORTANT: Change this to your email address to receive feedback.
-const RECIPIENT_EMAIL = "your-email@example.com";
-
 export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDialogProps) {
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<FeedbackFormData>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
@@ -54,25 +58,40 @@ export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDial
         subject: "",
         description: "",
       });
+      setIsSubmitting(false);
     }
   }, [open, defaultType, form]);
 
-  const onSubmit: SubmitHandler<FeedbackFormData> = (data) => {
-    const mailtoSubject = `[Rankle ${data.type === 'bug' ? 'Bug Report' : 'Suggestion'}] ${data.subject}`;
-    const mailtoBody = `Hello Rankle Team,
+  const onSubmit: SubmitHandler<FeedbackFormData> = async (data) => {
+    setIsSubmitting(true);
+    try {
+        const input: SubmitFeedbackInput = {
+            ...data,
+            userId: currentUser?.uid,
+        };
 
-I'm submitting the following ${data.type}:
---------------------------------
-${data.description}
---------------------------------
+        const result = await submitFeedback(input);
 
-Thank you!`;
-    
-    const mailtoLink = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(mailtoSubject)}&body=${encodeURIComponent(mailtoBody.trim())}`;
-    
-    window.location.href = mailtoLink;
-    
-    onOpenChange(false);
+        if (result.success) {
+            toast({
+                title: "Feedback Sent!",
+                description: "Thank you for your help in making Rankle better.",
+            });
+            onOpenChange(false);
+        } else {
+            throw new Error(result.error || "An unknown error occurred.");
+        }
+
+    } catch (error) {
+        console.error("Error submitting feedback:", error);
+        toast({
+            title: "Submission Failed",
+            description: "Could not send your feedback. Please try again later.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,7 +100,7 @@ Thank you!`;
         <DialogHeader>
           <DialogTitle>Submit Feedback</DialogTitle>
           <DialogDescription>
-            We appreciate your help in making Rankle better. Please fill out the form below.
+            We appreciate your help in making Rankle better. All feedback is anonymous.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -138,17 +157,17 @@ Thank you!`;
               )}
             />
             <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? (
+                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancel</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Preparing...
+                        Submitting...
                     </>
                     ) : (
                     <>
                         <Send className="mr-2 h-4 w-4" />
-                        Send via Email Client
+                        Submit Feedback
                     </>
                     )}
               </Button>
