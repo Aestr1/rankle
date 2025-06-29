@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut, User as UserIcon, Loader2, Layers, BarChart3 } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, Loader2, Layers, BarChart3, Users } from "lucide-react";
 
 export function AuthButton() {
   const { currentUser, loading, signInWithGoogle, signOutUser } = useAuth();
@@ -61,6 +61,12 @@ export function AuthButton() {
               <Link href="/analytics">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Analytics
+              </Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href="/friends">
+                <Users className="mr-2 h-4 w-4" />
+                Friends
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

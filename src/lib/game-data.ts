@@ -12,6 +12,13 @@ export const GAMES_DATA: Game[] = [
     averageScore: 18000,
     examplePreviousScores: [15000, 22000, 19000],
     scoreInputType: 'text',
+    exampleShareText: `TimeGuessr #759 39,838/50,000
+🌎🟩🟩🟨 📅🟩🟩🟨
+🌎🟩🟩🟨 📅🟩⬛⬛
+🌎🟩⬛️⬛️ 📅🟩⬛⬛
+🌎🟩🟩🟨 📅🟩⬛⬛
+🌎🟩🟩🟨 📅🟩🟩🟨
+https://timeguessr.com`
   },
   {
     id: 'wordle',
@@ -22,6 +29,12 @@ export const GAMES_DATA: Game[] = [
     averageScore: 4,
     examplePreviousScores: [3, 4, 5, 4],
     scoreInputType: 'text',
+    exampleShareText: `Wordle 1,471 4/6
+
+⬜⬜⬜⬜⬜
+🟨⬜🟨⬜⬜
+⬜🟩⬜🟩🟩
+🟩🟩🟩🟩🟩`
   },
   {
     id: 'worldle',
@@ -32,6 +45,11 @@ export const GAMES_DATA: Game[] = [
     averageScore: 3,
     examplePreviousScores: [2, 3, 4, 1],
     scoreInputType: 'text',
+    exampleShareText: `#Worldle #1255 3/6 (100%)
+🟩🟩🟩⬛⬛➡️
+🟩🟩🟩🟩🟨↘️
+🟩🟩🟩🟩🟩🎉
+https://worldle.teuteuf.fr`
   },
   {
     id: 'emovi',
@@ -42,6 +60,10 @@ export const GAMES_DATA: Game[] = [
     averageScore: 3,
     examplePreviousScores: [2, 4, 3],
     scoreInputType: 'text',
+    exampleShareText: `#Emovi 🎬 #1079
+🧹🏫👨‍🏫🧠🍎
+🟩⬜⬜
+https://emovi.teuteuf.fr`
   },
   {
     id: 'globle',
@@ -52,6 +74,10 @@ export const GAMES_DATA: Game[] = [
     averageScore: 8,
     examplePreviousScores: [7, 10, 9],
     scoreInputType: 'text',
+    exampleShareText: `🌎 Jun 29, 2025 🌍
+🔥 1 | Avg. Guesses: 8
+🟧⬜🟧🟨🟥🟧🟧🟩 = 8
+https://globle-game.com`
   },
   {
     id: 'connections',
@@ -62,5 +88,11 @@ export const GAMES_DATA: Game[] = [
     averageScore: 1,
     examplePreviousScores: [0, 1, 2, 0],
     scoreInputType: 'text',
+    exampleShareText: `Connections
+Puzzle #749
+🟩🟩🟩🟩
+🟪🟪🟪🟪
+🟦🟦🟦🟦
+🟨🟨🟨🟨`
   },
 ];

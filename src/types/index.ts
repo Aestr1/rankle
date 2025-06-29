@@ -10,6 +10,7 @@ export interface Game {
   averageScore: number;
   examplePreviousScores: number[];
   scoreInputType: 'number' | 'text';
+  exampleShareText?: string;
 }
 
 export interface LibraryGame {
@@ -44,4 +45,13 @@ export interface Gameplay {
     groupId: string | null;
     score: number;
     playedAt: any; // Firestore timestamp
+}
+
+export interface AppUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  createdAt?: any; 
+  friendUids?: string[]; // Array of user UIDs
 }

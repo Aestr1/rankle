@@ -7,14 +7,7 @@ import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-
-interface AppUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  createdAt?: any; 
-}
+import type { AppUser } from "@/types";
 
 interface AuthContextType {
   currentUser: AppUser | null;
@@ -45,6 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
             createdAt: serverTimestamp(),
+            friendUids: [],
           };
           await setDoc(userRef, newUser);
           setCurrentUser(newUser);
@@ -69,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         displayName: firebaseUser.displayName,
         photoURL: firebaseUser.photoURL,
         createdAt: serverTimestamp(),
+        friendUids: [],
       };
       try {
         await setDoc(userRef, newUser);
