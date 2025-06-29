@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Provides functions for normalizing game scores to a 0-100 scale.
  */
