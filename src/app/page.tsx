@@ -9,6 +9,7 @@ import { Trophy } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import React from 'react';
 import { AppFooter } from "@/components/app-footer";
+import { AdPlaceholder } from "@/components/ad-placeholder";
 
 export default function Home() {
   return (
@@ -25,6 +26,7 @@ export default function Home() {
       <main className="flex-grow container mx-auto p-4 md:p-8 space-y-12">
         <AboutSection />
         <GamesSection />
+        <AdPlaceholder />
         <PlayGroupsSection />
         <LeaderboardSection />
         <AnalyticsSection />
