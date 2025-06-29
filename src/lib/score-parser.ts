@@ -79,10 +79,25 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
       return isNaN(directScore) ? null : directScore;
     }
 
+    case 'connections': {
+        // Find all rows of 4 colored squares. The number of rows equals total attempts.
+        const emojiRows = shareText.match(/^[🟨🟩🟦🟪]{4}$/gm);
+        if (emojiRows && emojiRows.length >= 4) {
+            // Mistakes are total attempts minus the 4 correct groups.
+            const mistakes = emojiRows.length - 4;
+            return mistakes;
+        }
+        // Fallback for just entering the number of mistakes (0-4)
+        const directMistakes = parseFloat(shareText);
+        if (!isNaN(directMistakes) && directMistakes >= 0 && directMistakes <= 4) {
+            return directMistakes;
+        }
+        return null;
+    }
+
     // Default to direct number parsing for these and any other games
     case 'geoguessr':
     case 'wikispeedrun':
-    case 'connections':
     default: {
       const directScore = parseFloat(shareText);
       return isNaN(directScore) ? null : directScore;

@@ -66,12 +66,12 @@ export const GAMES_DATA: Game[] = [
   {
     id: 'connections',
     name: 'Connections',
-    description: 'Enter the number of mistakes you made (0-4).',
+    description: 'Paste your full "Share" text with the emoji grid.',
     link: 'https://www.nytimes.com/games/connections',
     icon: Puzzle,
     averageScore: 1,
     examplePreviousScores: [0, 1, 2, 0],
-    scoreInputType: 'number',
+    scoreInputType: 'text',
   },
   {
     id: 'geoguessr',
