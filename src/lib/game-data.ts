@@ -46,12 +46,12 @@ export const GAMES_DATA: Game[] = [
   {
     id: 'globle',
     name: 'Globle',
-    description: 'Enter the number of guesses it took you.',
+    description: "Paste your full 'Share' text. The app will find your number of guesses.",
     link: 'https://globle-game.com/',
     icon: Globe2,
     averageScore: 8,
     examplePreviousScores: [7, 10, 9],
-    scoreInputType: 'number',
+    scoreInputType: 'text',
   },
   {
     id: 'bandle',

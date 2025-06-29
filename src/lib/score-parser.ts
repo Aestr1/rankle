@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Parses share text from games to extract a raw numerical score.
  */
@@ -61,10 +62,26 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
       return null; // Don't fall back to number parsing for these games
     }
 
+    case 'globle': {
+      const lines = shareText.split('\n');
+      for (const line of lines) {
+        // Look for a line like '... = 8'
+        const match = line.match(/\s*=\s*(\d+)/);
+        if (match && match[1]) {
+          const score = parseInt(match[1], 10);
+          if (!isNaN(score)) {
+            return score;
+          }
+        }
+      }
+      // Fallback for just entering the number
+      const directScore = parseFloat(shareText);
+      return isNaN(directScore) ? null : directScore;
+    }
+
     // Default to direct number parsing for these and any other games
     case 'geoguessr':
     case 'wikispeedrun':
-    case 'globle':
     case 'connections':
     default: {
       const directScore = parseFloat(shareText);
