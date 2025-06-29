@@ -87,3 +87,28 @@ export async function getUserGameplays(userId: string): Promise<Gameplay[]> {
     });
     return gameplays;
 }
+
+/**
+ * Fetches all gameplay records for a specific user for a given date.
+ */
+export async function getUserGameplaysForDate(userId: string, date: Date): Promise<Gameplay[]> {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const q = query(
+    collection(db, "gameplays"),
+    where("userId", "==", userId),
+    where("playedAt", ">=", Timestamp.fromDate(startOfDay)),
+    where("playedAt", "<=", Timestamp.fromDate(endOfDay))
+  );
+
+  const querySnapshot = await getDocs(q);
+  const gameplays: Gameplay[] = [];
+  querySnapshot.forEach((doc) => {
+    gameplays.push({ id: doc.id, ...doc.data() } as Gameplay);
+  });
+  return gameplays;
+}

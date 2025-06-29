@@ -6,77 +6,85 @@ import { GameCard } from "@/components/game-card";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Globe } from "lucide-react";
-
-interface CompletedGameInfo {
-  id: string;
-  score: number;
-}
-
-const getTodaysStorageKey = () => {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  return `global_completedGames_${today}`;
-};
+import { useAuth } from "@/contexts/auth-context";
+import { getUserGameplaysForDate } from "@/lib/gameplay";
+import type { Gameplay } from "@/types";
 
 export function GamesSection() {
-  // This state now tracks completion for the session, not for data persistence.
-  // The database is the source of truth, but this gives instant UI feedback.
-  const [completedGames, setCompletedGames] = useState<CompletedGameInfo[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  const { currentUser } = useAuth();
+  const [todaysGameplays, setTodaysGameplays] = useState<Gameplay[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsClient(true);
-    // You could still use localStorage to remember which games the user *played*
-    // during this session on this device, to keep the UI checked.
-    const key = getTodaysStorageKey();
-    try {
-      const storedCompleted = localStorage.getItem(key);
-      if (storedCompleted) {
-        setCompletedGames(JSON.parse(storedCompleted));
+    const fetchTodaysScores = async () => {
+      if (!currentUser) {
+        setTodaysGameplays([]);
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error accessing localStorage:", error);
-      setCompletedGames([]);
-    }
-  }, []);
+      setIsLoading(true);
+      try {
+        const gameplays = await getUserGameplaysForDate(currentUser.uid, new Date());
+        setTodaysGameplays(gameplays);
+      } catch (error) {
+        console.error("Failed to fetch today's gameplays:", error);
+        setTodaysGameplays([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTodaysScores();
+  }, [currentUser]);
 
   const handleGameComplete = useCallback((gameId: string, score: number) => {
-    // This now just updates the UI for the current session.
-    const key = getTodaysStorageKey();
-    setCompletedGames(prev => {
-      const newCompletedGames = [...prev, { id: gameId, score }];
-      try {
-        localStorage.setItem(key, JSON.stringify(newCompletedGames));
-      } catch (error) {
-        console.error("Error saving to localStorage:", error);
-      }
-      return newCompletedGames;
-    });
-  }, []);
+    // This provides instant UI feedback without waiting for a re-fetch.
+    // The database is the true source of truth, but this makes the app feel faster.
+    const newGameplay = {
+      gameId,
+      score,
+      userId: currentUser?.uid || '',
+      userDisplayName: currentUser?.displayName || '',
+      playedAt: new Date(),
+      groupId: null
+    };
+    setTodaysGameplays(prev => [...prev, newGameplay as Gameplay]);
+  }, [currentUser]);
 
-  if (!isClient) {
-    // Render a loading state or nothing SSR to avoid hydration mismatch with localStorage
-    return (
-      <section id="games" aria-labelledby="games-title">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center text-3xl font-headline text-primary">
-              <Globe className="mr-3 h-8 w-8 text-accent" />
-              <span id="games-title">Global Daily Challenge</span>
-            </CardTitle>
-             <CardDescription>
-              Play today's featured games. Your scores here are just for you, saved on this device.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+  const renderGameCards = () => {
+     if (isLoading && currentUser) {
+        return (
+             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {GAMES_DATA.map((game) => (
                 <div key={game.id} className="h-96 bg-muted rounded-lg animate-pulse"></div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      </section>
-    );
+        )
+     }
+
+     return (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {GAMES_DATA.map((game) => {
+              // Find the best score for the current game to handle multiple submissions
+              const playsForThisGame = todaysGameplays.filter(gp => gp.gameId === game.id);
+              const bestPlay = playsForThisGame.length > 0
+                ? playsForThisGame.reduce((best, current) => current.score > best.score ? current : best)
+                : null;
+
+              return (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  isCompleted={!!bestPlay}
+                  submittedScore={bestPlay?.score}
+                  onComplete={handleGameComplete}
+                  groupId={null} // This signifies a global game
+                />
+              );
+            })}
+          </div>
+     )
   }
 
   return (
@@ -88,25 +96,11 @@ export function GamesSection() {
             <span id="games-title">Global Daily Challenge</span>
           </CardTitle>
            <CardDescription>
-              Play today's featured games. Scores submitted here are added to your personal analytics but not to a public leaderboard.
+              Play today's featured games. Your scores contribute to your personal analytics and the global leaderboard.
             </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {GAMES_DATA.map((game) => {
-              const completedInfo = completedGames.find(cg => cg.id === game.id);
-              return (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  isCompleted={!!completedInfo}
-                  submittedScore={completedInfo?.score}
-                  onComplete={handleGameComplete}
-                  groupId={null} // This signifies a global game
-                />
-              );
-            })}
-          </div>
+          {renderGameCards()}
         </CardContent>
       </Card>
     </section>
