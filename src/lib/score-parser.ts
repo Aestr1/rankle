@@ -30,7 +30,7 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
       const lines = shareText.split('\n');
       for (const line of lines) {
         // Find the line that consists of only the square emojis
-        if (/^[🟩⬜🟥️]+$/.test(line.trim())) {
+        if (/^[🟩⬜🟥️⬛️]+$/.test(line.trim())) {
           const guessLine = line.trim();
           const guessIndex = guessLine.indexOf('🟩');
           if (guessIndex !== -1) {
@@ -80,8 +80,8 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
     }
 
     case 'connections': {
-        // Find all rows of 4 colored squares. The number of rows equals total attempts.
-        const emojiRows = shareText.match(/^[🟨🟩🟦🟪]{4}$/gm);
+        // Find all rows of 4 colored squares, ignoring potential whitespace.
+        const emojiRows = shareText.match(/^\s*[🟨🟩🟦🟪]{4}\s*$/gm);
         if (emojiRows && emojiRows.length >= 4) {
             // Mistakes are total attempts minus the 4 correct groups.
             const mistakes = emojiRows.length - 4;
