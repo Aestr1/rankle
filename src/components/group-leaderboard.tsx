@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Trophy, Info } from 'lucide-react';
 import { getGroupGameplays } from '@/lib/gameplay';
-import { GAMES_DATA } from '@/lib/game-data';
 import type { Gameplay } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +17,7 @@ interface PlayerStats {
   displayName: string;
   totalRankPoints: number;
   gamesPlayed: number;
-  scores: { [gameId: string]: number };
+  totalNormalizedScore: number;
 }
 
 export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
@@ -37,8 +36,6 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
           setIsLoading(false);
           return;
         }
-
-        const gameMap = new Map(GAMES_DATA.map(g => [g.id, g]));
         
         // Group scores by game
         const scoresByGame = new Map<string, Gameplay[]>();
@@ -49,25 +46,24 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
           scoresByGame.get(gp.gameId)!.push(gp);
         });
 
-        // Rank players within each game
+        // Rank players within each game. Higher score is always better now.
         const ranksByGame = new Map<string, Map<string, number>>(); // gameId -> userId -> rank
-        scoresByGame.forEach((scores, gameId) => {
-          const game = gameMap.get(gameId);
-          if (!game) return;
+        scoresByGame.forEach((scores) => {
+          const sortedScores = [...scores].sort((a, b) => b.score - a.score);
 
-          const sortedScores = [...scores].sort((a, b) => {
-            return game.scoring === 'asc' ? a.score - b.score : b.score - a.score;
-          });
-
-          const gameRanks = new Map<string, number>();
-          let rank = 1;
-          sortedScores.forEach((s, i) => {
-            if (i > 0 && s.score !== sortedScores[i-1].score) {
-              rank = i + 1;
-            }
-            gameRanks.set(s.userId, rank);
-          });
-          ranksByGame.set(gameId, gameRanks);
+          if (sortedScores.length > 0) {
+            const gameId = sortedScores[0].gameId;
+            const gameRanks = new Map<string, number>();
+            let rank = 1;
+            sortedScores.forEach((s, i) => {
+              // Award same rank for ties
+              if (i > 0 && s.score !== sortedScores[i-1].score) {
+                rank = i + 1;
+              }
+              gameRanks.set(s.userId, rank);
+            });
+            ranksByGame.set(gameId, gameRanks);
+          }
         });
 
         // Aggregate player stats
@@ -79,11 +75,11 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
               displayName: gp.userDisplayName,
               totalRankPoints: 0,
               gamesPlayed: 0,
-              scores: {},
+              totalNormalizedScore: 0,
             });
           }
           const stats = playerStatsMap.get(gp.userId)!;
-          stats.scores[gp.gameId] = gp.score;
+          stats.totalNormalizedScore += gp.score;
         });
 
         ranksByGame.forEach((ranks, gameId) => {
@@ -100,7 +96,8 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
             if (a.totalRankPoints !== b.totalRankPoints) {
                 return a.totalRankPoints - b.totalRankPoints; // Lower rank points is better
             }
-            return b.gamesPlayed - a.gamesPlayed; // More games played is a tie-breaker
+            // Tie-breaker: higher total normalized score is better
+            return b.totalNormalizedScore - a.totalNormalizedScore; 
         });
 
         setLeaderboard(finalLeaderboard);
@@ -149,10 +146,10 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-1/12 text-center">Rank</TableHead>
-                    <TableHead className="w-5/12">Player</TableHead>
-                    <TableHead className="w-3/12 text-center">Games</TableHead>
-                    <TableHead className="w-3/12 text-center">Rank Pts</TableHead>
+                    <TableHead className="w-[15%] text-center">Rank</TableHead>
+                    <TableHead className="w-[45%]">Player</TableHead>
+                    <TableHead className="w-[20%] text-center">Games</TableHead>
+                    <TableHead className="w-[20%] text-center">Rank Pts</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -162,7 +159,7 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
                             {index === 0 && <Trophy className="h-5 w-5 text-yellow-500 inline-block mr-1" />}
                             {index + 1}
                         </TableCell>
-                        <TableCell>{player.displayName}</TableCell>
+                        <TableCell className="font-medium">{player.displayName}</TableCell>
                         <TableCell className="text-center">{player.gamesPlayed}</TableCell>
                         <TableCell className="text-center">
                             <Badge variant="secondary">{player.totalRankPoints}</Badge>

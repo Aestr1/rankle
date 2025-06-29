@@ -1,17 +1,10 @@
 
-"use client"
+"use client";
 
 import * as React from "react"
 import { format } from "date-fns"
 import { Line, LineChart, CartesianGrid, XAxis, Tooltip, YAxis, ResponsiveContainer } from "recharts"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import type { Game, Gameplay } from "@/types"
 
 interface UserGameChartProps {
@@ -26,12 +19,6 @@ export function UserGameChart({ game, gameplays }: UserGameChartProps) {
       date: gp.playedAt.toDate(),
       score: gp.score,
     }));
-
-  const yAxisDomain: [number | 'auto', number | 'auto'] = ['auto', 'auto'];
-  if (game.scoring === 'asc') {
-      const minScore = Math.min(...chartData.map(d => d.score));
-      yAxisDomain[0] = Math.max(0, minScore - 1); // Give a little buffer, but not below 0
-  }
 
   return (
     <div className="h-[250px] w-full">
@@ -58,7 +45,7 @@ export function UserGameChart({ game, gameplays }: UserGameChartProps) {
                     tickLine={false} 
                     axisLine={false} 
                     tickMargin={8}
-                    domain={yAxisDomain}
+                    domain={[0, 100]}
                 />
                 <Tooltip
                     contentStyle={{
@@ -67,6 +54,7 @@ export function UserGameChart({ game, gameplays }: UserGameChartProps) {
                         borderRadius: "var(--radius)"
                     }}
                     labelFormatter={(label) => format(label, "PPP")}
+                    formatter={(value: number) => [`${value} / 100`, "Score"]}
                 />
                 <Line
                     type="monotone"

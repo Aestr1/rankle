@@ -9,9 +9,8 @@ export const GAMES_DATA: Game[] = [
     description: 'Guess the year of historical photos within a range.',
     link: 'https://timeguessr.com/',
     icon: Timer,
-    averageScore: 10000,
-    examplePreviousScores: [8000, 12000, 11000],
-    scoring: 'desc', // higher is better
+    averageScore: 18000,
+    examplePreviousScores: [15000, 22000, 19000],
   },
   {
     id: 'wordle',
@@ -21,7 +20,6 @@ export const GAMES_DATA: Game[] = [
     icon: BookOpenText,
     averageScore: 4,
     examplePreviousScores: [3, 4, 5, 4],
-    scoring: 'asc', // lower is better
   },
   {
     id: 'worldle',
@@ -31,7 +29,6 @@ export const GAMES_DATA: Game[] = [
     icon: Globe,
     averageScore: 3,
     examplePreviousScores: [2, 3, 4, 1],
-    scoring: 'asc', // lower is better
   },
   {
     id: 'emovi',
@@ -41,7 +38,6 @@ export const GAMES_DATA: Game[] = [
     icon: Film,
     averageScore: 3,
     examplePreviousScores: [2, 4, 3],
-    scoring: 'asc', // lower is better
   },
   {
     id: 'globle',
@@ -51,7 +47,6 @@ export const GAMES_DATA: Game[] = [
     icon: Globe2,
     averageScore: 8,
     examplePreviousScores: [7, 10, 9],
-    scoring: 'asc', // lower is better
   },
   {
     id: 'bandle',
@@ -61,17 +56,15 @@ export const GAMES_DATA: Game[] = [
     icon: Music,
     averageScore: 3,
     examplePreviousScores: [2, 4, 1],
-    scoring: 'asc', // lower is better
   },
   {
     id: 'connections',
     name: 'Connections',
-    description: 'Group words into four categories based on common themes.',
+    description: 'Group words into categories. Enter mistakes made (0-4).',
     link: 'https://www.nytimes.com/games/connections',
     icon: Puzzle,
     averageScore: 1,
     examplePreviousScores: [0, 1, 2, 0],
-    scoring: 'asc', // lower is better
   },
   {
     id: 'geoguessr',
@@ -81,16 +74,14 @@ export const GAMES_DATA: Game[] = [
     icon: MapPin,
     averageScore: 18000,
     examplePreviousScores: [15000, 20000, 17500],
-    scoring: 'desc', // higher is better
   },
   {
     id: 'wikispeedrun',
     name: 'Wikipedia Speedrun',
-    description: 'Navigate from a start to an end Wikipedia page.',
+    description: 'Navigate pages. Enter your time in seconds.',
     link: 'https://www.wikispeedruns.com/',
     icon: Zap,
     averageScore: 120,
     examplePreviousScores: [100, 150, 110],
-    scoring: 'asc', // lower is better
   },
 ];

@@ -15,6 +15,7 @@ import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/auth-context";
 import { addGameplay } from "@/lib/gameplay";
+import { normalizeScore } from "@/lib/scoring";
 
 interface GameCardProps {
   game: Game;
@@ -39,7 +40,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
   const form = useForm<ScoreFormData>({
     resolver: zodResolver(scoreSchema),
     defaultValues: {
-      score: submittedScore?.toString() || "",
+      score: "", // Always start fresh, don't show old raw scores
     },
   });
 
@@ -49,27 +50,29 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
     const numericScore = parseFloat(data.score);
 
     try {
+      const normalizedScore = normalizeScore(game.id, numericScore);
+      
       const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
           userId: currentUser.uid,
           userDisplayName: currentUser.displayName || "Anonymous",
           gameId: game.id,
           groupId: groupId,
-          score: numericScore
+          score: normalizedScore,
       };
 
       await addGameplay(gameplayData);
       
       toast({
         title: "Score Submitted!",
-        description: `Your score of ${numericScore} for ${game.name} has been saved.`,
+        description: `Your normalized score of ${normalizedScore}/100 for ${game.name} has been saved.`,
         variant: "default",
       });
-      onComplete(game.id, numericScore);
-    } catch (error) {
+      onComplete(game.id, normalizedScore);
+    } catch (error: any) {
       console.error("Submission error:", error);
       toast({
         title: "Error",
-        description: "Could not submit score. Please try again.",
+        description: error.message || "Could not submit score. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -119,7 +122,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                         id={`score-${game.id}`}
                         type="text" 
                         inputMode="decimal"
-                        placeholder="Enter your score"
+                        placeholder="Enter your raw score"
                         {...field}
                         className="text-base"
                         aria-describedby={`score-message-${game.id}`}
@@ -146,14 +149,14 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
         ) : (
           submittedScore !== null && submittedScore !== undefined && (
             <div className="text-center">
-              <p className="text-lg font-medium">Your score: {submittedScore}</p>
-              <p className="text-xs text-muted-foreground">Score saved to leaderboard.</p>
+              <p className="text-lg font-medium">Your score: {submittedScore} / 100</p>
+              <p className="text-xs text-muted-foreground">Normalized score saved.</p>
             </div>
           )
         )}
       </CardContent>
       <CardFooter className="text-xs text-muted-foreground mt-auto">
-        Average score: {game.averageScore}
+        Average raw score: {game.averageScore}
       </CardFooter>
     </Card>
   );

@@ -9,7 +9,6 @@ export interface Game {
   icon: LucideIcon;
   averageScore: number;
   examplePreviousScores: number[];
-  scoring: 'asc' | 'desc'; // asc for lower is better, desc for higher is better
 }
 
 export interface LibraryGame {
