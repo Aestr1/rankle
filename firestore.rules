@@ -4,49 +4,38 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users: Can read their own doc, and other users' public profiles.
-    // Cannot write to other users' docs.
+    // Users can only read/write their own data, but some public fields are readable by anyone.
     match /users/{userId} {
-      // Any authenticated user can read public user data (for friends list, leaderboards).
-      allow read: if request.auth != null; 
-      // Only the user can write to their own doc.
-      allow write: if request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+      allow delete: if false; // Users shouldn't delete their own accounts from the client.
+    }
+
+    // Gameplays can be created by authenticated users and read by anyone for leaderboards.
+    match /gameplays/{gameplayId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false; // Do not allow editing/deleting scores from the client.
     }
     
-    // Gameplays: Users can create their own gameplay records.
-    // They can read gameplays for groups they are in or global ones.
-    match /gameplays/{gameplayId} {
-      // Users can only create gameplay records for themselves.
-      allow create: if request.auth.uid == request.resource.data.userId;
-      
-      // Combine read rules for clarity. A user can read a gameplay if:
-      // 1. It's a global game (no groupId).
-      // OR
-      // 2. They are a member of the group it belongs to.
-      allow read: if resource.data.groupId == null || 
-                     (request.auth != null && 
-                      exists(/databases/$(database)/documents/groups/$(resource.data.groupId)) &&
-                      request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.memberUids);
-    }
-
-    // Groups: Users can read groups they are members of.
-    // Creation/Joining/Leaving/Deleting is handled by secure server-side flows.
+    // Groups are private and can only be read/updated by their members.
     match /groups/{groupId} {
-       // Only allow reads if the user's UID is in the group's `memberUids` array.
-      allow read: if request.auth != null && 
-                     'memberUids' in resource.data &&
-                     request.auth.uid in resource.data.memberUids;
+      // Only members of the group can read the group document.
+      allow read: if request.auth != null && resource.data.memberUids.hasAny([request.auth.uid]);
 
-      // Writes are disallowed from the client for security.
-      // All group mutations (create, join, leave, delete) are managed
-      // by server-side Genkit flows using the Admin SDK, which bypasses these rules.
-      allow write: if false; 
+      // Updates (like leaving a group) are handled by server-side flows.
+      // We deny direct client updates for safety. Server flows bypass these rules.
+      allow update, delete: if false; 
+      
+      // Creating a group is handled by a server-side flow.
+      allow create: if false;
     }
 
-    // Feedback: No one can read/write feedback from the client.
-    // This is handled entirely by the secure server-side flow.
+    // Feedback can be submitted by anyone, but not read.
     match /feedback/{feedbackId} {
-      allow read, write: if false;
+      allow read, update, delete: if false;
+      allow create: if true; // Allow anonymous or authenticated feedback submission.
     }
   }
 }
