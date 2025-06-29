@@ -8,7 +8,11 @@ function getServiceAccount(): ServiceAccount | null {
     return null;
   }
   try {
-    return JSON.parse(serviceAccountJson);
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+    return serviceAccount;
   } catch (e) {
     console.error("Error parsing FIREBASE_SERVICE_ACCOUNT. Ensure it's a valid JSON string copied from the Firebase console.", e);
     return null;
