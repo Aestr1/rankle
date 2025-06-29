@@ -50,7 +50,7 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
       const guessMatch = shareText.match(/([1-6X])\/6/);
       if (guessMatch && guessMatch[1]) {
         const result = guessMatch[1];
-        if (result === 'X') {
+        if (result.toUpperCase() === 'X') {
           return 7; // Represents a fail state
         }
         const guesses = parseInt(result, 10);
@@ -79,18 +79,20 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
     }
 
     case 'connections': {
-        const lines = shareText.split('\n');
+        const lines = shareText.split(/\r\n?|\n/);
         let emojiGridRows = 0;
 
         for (const line of lines) {
             const trimmedLine = line.trim();
             // A valid row must contain exactly 4 of these specific emojis.
-            if (/^[🟨🟩🟦🟪]{4}$/.test(trimmedLine)) {
+            // The 'u' flag is critical for correct Unicode emoji parsing.
+            if (/^[🟨🟩🟦🟪]{4}$/u.test(trimmedLine)) {
                 emojiGridRows++;
             }
         }
 
-        // If we found at least 4 rows, we can calculate mistakes.
+        // If we found at least one emoji row, we assume it's a valid Connections entry.
+        // It must have at least 4 rows to be a completed puzzle.
         if (emojiGridRows >= 4) {
             const mistakes = emojiGridRows - 4;
             return mistakes;
