@@ -1,0 +1,34 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can read public user profiles.
+    // A user can only write to their own document.
+    match /users/{userId} {
+      allow read;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Gameplay scores can be read by anyone for leaderboards.
+    // Authenticated users can create their own scores. No one can update/delete.
+    match /gameplays/{gameplayId} {
+      allow read;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Group information can only be read by members of that group.
+    // Group creation, updates (joining/leaving), and deletion are handled by secure server-side flows.
+    match /groups/{groupId} {
+      allow read: if request.auth != null && request.auth.uid in resource.data.memberUids;
+      allow create, update, delete: if false; // Managed by server flows
+    }
+    
+    // Feedback is submitted via a secure server-side flow.
+    match /feedback/{feedbackId} {
+      allow read, write: if false; // Managed by server flows
+    }
+  }
+}
