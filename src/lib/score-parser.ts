@@ -79,22 +79,36 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
 
     case 'connections': {
         const lines = shareText.split(/\r\n?|\n/);
-        let emojiGridRows = 0;
+        let mistakeCount = 0;
+        let emojiGridRowsFound = false;
 
         for (const line of lines) {
             const trimmedLine = line.trim();
-            // A valid row must contain exactly 4 of these specific emojis.
-            // The 'u' flag is critical for correct Unicode emoji parsing.
+            // Check if it's a 4-emoji line
             if (/^[🟨🟩🟦🟪]{4}$/u.test(trimmedLine)) {
-                emojiGridRows++;
+                emojiGridRowsFound = true;
+                // Check if all emojis in the line are the same
+                // A line of mixed colors is a mistake.
+                const firstEmoji = trimmedLine[0];
+                let isMistake = false;
+                // Using Array.from to correctly iterate over Unicode characters (emojis)
+                for (const emoji of Array.from(trimmedLine)) {
+                    if (emoji !== firstEmoji) {
+                        isMistake = true;
+                        break;
+                    }
+                }
+                
+                if (isMistake) {
+                    mistakeCount++;
+                }
             }
         }
 
-        // If we found at least one emoji row, we assume it's a valid Connections entry.
-        // It must have at least 4 rows to be a completed puzzle.
-        if (emojiGridRows >= 4) {
-            const mistakes = emojiGridRows - 4;
-            return mistakes;
+        // Only return a score if we found what looks like a Connections grid.
+        // This prevents misinterpreting other text as a 0-mistake game.
+        if (emojiGridRowsFound) {
+            return mistakeCount;
         }
 
         // Fallback for just entering the number of mistakes (0-4)
