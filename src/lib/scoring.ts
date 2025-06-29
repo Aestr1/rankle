@@ -53,7 +53,15 @@ export function normalizeScore(gameId: string, rawScore: number): number {
         
         // Connections: raw score is number of mistakes (0-4)
         case 'connections':
-            normalizedScore = 100 - rawScore * 25;
+            // This weighted curve gives a bonus for a perfect game.
+            const mistakeMap: {[key: number]: number} = {
+                0: 100, // Perfect!
+                1: 85,
+                2: 65,
+                3: 40,
+                4: 15,
+            };
+            normalizedScore = mistakeMap[rawScore] ?? 0;
             break;
 
         // Globle: Lower number of guesses is better (unlimited guesses)
