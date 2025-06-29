@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Parses share text from games to extract a raw numerical score.
  */
@@ -80,18 +79,29 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
     }
 
     case 'connections': {
-        // Find all rows of 4 colored squares, ignoring potential whitespace.
-        const emojiRows = shareText.match(/^\s*[🟨🟩🟦🟪]{4}\s*$/gm);
-        if (emojiRows && emojiRows.length >= 4) {
-            // Mistakes are total attempts minus the 4 correct groups.
-            const mistakes = emojiRows.length - 4;
+        const lines = shareText.split('\n');
+        let emojiGridRows = 0;
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            // A valid row must contain exactly 4 of these specific emojis.
+            if (/^[🟨🟩🟦🟪]{4}$/.test(trimmedLine)) {
+                emojiGridRows++;
+            }
+        }
+
+        // If we found at least 4 rows, we can calculate mistakes.
+        if (emojiGridRows >= 4) {
+            const mistakes = emojiGridRows - 4;
             return mistakes;
         }
+
         // Fallback for just entering the number of mistakes (0-4)
         const directMistakes = parseFloat(shareText);
         if (!isNaN(directMistakes) && directMistakes >= 0 && directMistakes <= 4) {
             return directMistakes;
         }
+        
         return null;
     }
 
