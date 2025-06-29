@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -33,7 +34,8 @@ const feedbackSchema = z.object({
 
 type FeedbackFormData = z.infer<typeof feedbackSchema>;
 
-const RECIPIENT_EMAIL = "feedback@rankle.example.com";
+// IMPORTANT: Change this to your email address to receive feedback.
+const RECIPIENT_EMAIL = "your-email@example.com";
 
 export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDialogProps) {
   const form = useForm<FeedbackFormData>({
