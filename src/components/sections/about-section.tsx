@@ -19,10 +19,10 @@ export function AboutSection() {
             <strong>How it works:</strong>
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Browse the list of daily games.</li>
-            <li>Click "Play Game" to open the game on its official website.</li>
-            <li>After playing, enter your score in the input field on the game card here.</li>
-            <li>Click "Submit" to save your score to your personal analytics and any group leaderboards.</li>
+            <li>Click a "Play Game" button below to open a daily puzzle game on its official website.</li>
+            <li>After you finish the game, look for a "Share" button to copy your results to the clipboard.</li>
+            <li>Return to Rankle and use the "Paste" button on the game card to enter your score automatically.</li>
+            <li>Click "Submit Score" to save your progress to your personal analytics and the leaderboards.</li>
           </ul>
           <p>
             The app currently operates on an honor system. Challenge yourself, track your progress, and see how you stack up against your friends!

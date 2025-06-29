@@ -11,7 +11,7 @@ import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, ExternalLink, Loader2, Info } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, Info, ClipboardPaste } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/auth-context";
 import { addGameplay } from "@/lib/gameplay";
@@ -47,6 +47,32 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
       score: "", // Always start fresh
     },
   });
+
+  const handlePaste = async () => {
+    if (!navigator.clipboard?.readText) {
+      toast({
+        title: "Paste Not Supported",
+        description: "Your browser does not support pasting from the clipboard. Please paste manually.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const text = await navigator.clipboard.readText();
+      form.setValue('score', text, { shouldValidate: true });
+      toast({
+        title: "Pasted from clipboard!",
+        description: "Your score is ready to be submitted.",
+      });
+    } catch (err) {
+      console.error('Failed to read clipboard contents: ', err);
+      toast({
+        title: "Paste Failed",
+        description: "Could not read clipboard. Please ensure you have granted permission.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const onSubmit: SubmitHandler<ScoreFormData> = async (data) => {
     if (!currentUser) return;
@@ -153,28 +179,40 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                   render={({ field }) => (
                     <FormItem>
                       <Label htmlFor={`score-${game.id}`} className="sr-only">Your Score for {game.name}</Label>
-                      <FormControl>
-                        {game.scoreInputType === 'text' ? (
-                            <Textarea
-                              id={`score-${game.id}`}
-                              placeholder="Paste share text here..."
-                              className="text-sm resize-none"
-                              rows={4}
-                              {...field}
-                              aria-describedby={`score-message-${game.id}`}
-                            />
-                        ) : (
-                            <Input
-                              id={`score-${game.id}`}
-                              type="text" 
-                              inputMode="decimal"
-                              placeholder="Enter score here..."
-                              {...field}
-                              className="text-base"
-                              aria-describedby={`score-message-${game.id}`}
-                            />
-                        )}
-                      </FormControl>
+                      <div className="relative">
+                        <FormControl>
+                          {game.scoreInputType === 'text' ? (
+                              <Textarea
+                                id={`score-${game.id}`}
+                                placeholder="Paste share text here..."
+                                className="text-sm resize-none pr-12"
+                                rows={4}
+                                {...field}
+                                aria-describedby={`score-message-${game.id}`}
+                              />
+                          ) : (
+                              <Input
+                                id={`score-${game.id}`}
+                                type="text" 
+                                inputMode="decimal"
+                                placeholder="Enter score here..."
+                                {...field}
+                                className="text-base pr-12"
+                                aria-describedby={`score-message-${game.id}`}
+                              />
+                          )}
+                        </FormControl>
+                         <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={handlePaste}
+                            className="absolute top-1 right-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+                            aria-label="Paste score from clipboard"
+                          >
+                            <ClipboardPaste className="h-5 w-5" />
+                          </Button>
+                      </div>
                       <FormMessage id={`score-message-${game.id}`} />
                     </FormItem>
                   )}
