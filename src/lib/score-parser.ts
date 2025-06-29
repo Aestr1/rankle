@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Parses share text from games to extract a raw numerical score.
  */
@@ -25,10 +24,27 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
       const directTimeguessrScore = parseFloat(shareText);
       return isNaN(directTimeguessrScore) ? null : directTimeguessrScore;
     }
-    
+
+    case 'emovi': {
+      const lines = shareText.split('\n');
+      for (const line of lines) {
+        // Find the line that consists of only the square emojis
+        if (/^[🟩⬜🟥️]+$/.test(line.trim())) {
+          const guessLine = line.trim();
+          const guessIndex = guessLine.indexOf('🟩');
+          if (guessIndex !== -1) {
+            return guessIndex + 1; // 1-based guess count (1, 2, or 3)
+          }
+          // If no green square, it's a fail. It has 3 attempts.
+          // Failure would be raw score 4.
+          return 4;
+        }
+      }
+      return null; // Could not find the emoji grid line
+    }
+
     case 'wordle':
     case 'worldle':
-    case 'emovi':
     case 'bandle': {
       // Look for "X/6" format
       const guessMatch = shareText.match(/([1-6X])\/6/);

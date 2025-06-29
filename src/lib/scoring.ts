@@ -13,10 +13,20 @@ export function normalizeScore(gameId: string, rawScore: number): number {
     let normalizedScore: number;
 
     switch (gameId) {
+        case 'emovi': {
+            // 3-guess game
+            const scoreMap: {[key: number]: number} = {
+                1: 100, // 1st try
+                2: 75,  // 2nd try
+                3: 50,  // 3rd try
+                4: 0,   // Fail state
+            };
+            normalizedScore = scoreMap[rawScore] ?? 0;
+            break;
+        }
         // Games where a lower number of guesses is better (out of 6)
         case 'wordle':
         case 'worldle':
-        case 'emovi':
         case 'bandle':
              // This scoring curve is weighted to reward an average score (4/6) more highly.
              const scoreMap: {[key: number]: number} = {
