@@ -4,9 +4,11 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Trophy, Info } from 'lucide-react';
 import { getGroupGameplays } from '@/lib/gameplay';
-import type { Gameplay } from '@/types';
+import type { Gameplay, PlayGroup } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface GroupLeaderboardProps {
   groupId: string;
@@ -15,9 +17,8 @@ interface GroupLeaderboardProps {
 interface PlayerStats {
   userId: string;
   displayName: string;
-  totalRankPoints: number;
+  totalScore: number;
   gamesPlayed: number;
-  totalNormalizedScore: number;
 }
 
 export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
@@ -30,74 +31,56 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const gameplays = await getGroupGameplays(groupId, new Date());
-        if (gameplays.length === 0) {
-          setLeaderboard([]);
-          setIsLoading(false);
-          return;
+        // 1. Fetch Group and Game Info
+        const groupRef = doc(db, 'groups', groupId);
+        const groupSnap = await getDoc(groupRef);
+
+        if (!groupSnap.exists()) {
+            setError("Group not found.");
+            setLeaderboard([]);
+            setIsLoading(false);
+            return;
         }
+
+        const groupData = groupSnap.data() as PlayGroup;
+        const groupMembers = groupData.members || [];
         
-        // Group scores by game
-        const scoresByGame = new Map<string, Gameplay[]>();
-        gameplays.forEach(gp => {
-          if (!scoresByGame.has(gp.gameId)) {
-            scoresByGame.set(gp.gameId, []);
-          }
-          scoresByGame.get(gp.gameId)!.push(gp);
-        });
-
-        // Rank players within each game. Higher score is always better now.
-        const ranksByGame = new Map<string, Map<string, number>>(); // gameId -> userId -> rank
-        scoresByGame.forEach((scores) => {
-          const sortedScores = [...scores].sort((a, b) => b.score - a.score);
-
-          if (sortedScores.length > 0) {
-            const gameId = sortedScores[0].gameId;
-            const gameRanks = new Map<string, number>();
-            let rank = 1;
-            sortedScores.forEach((s, i) => {
-              // Award same rank for ties
-              if (i > 0 && s.score !== sortedScores[i-1].score) {
-                rank = i + 1;
-              }
-              gameRanks.set(s.userId, rank);
-            });
-            ranksByGame.set(gameId, gameRanks);
-          }
-        });
-
-        // Aggregate player stats
+        // 2. Initialize stats for all members to handle the "0 score for unplayed games" rule.
         const playerStatsMap = new Map<string, PlayerStats>();
+        groupMembers.forEach(member => {
+            playerStatsMap.set(member.uid, {
+                userId: member.uid,
+                displayName: member.displayName || 'Player',
+                totalScore: 0,
+                gamesPlayed: 0,
+            });
+        });
+
+        // 3. Fetch all of today's gameplay records for the group.
+        const gameplays = await getGroupGameplays(groupId, new Date());
+        
+        // 4. Filter for only the BEST score for each user for each game to prevent multiple submissions for the same game from inflating scores.
+        const bestScores = new Map<string, Gameplay>(); // Key: 'userId-gameId'
         gameplays.forEach(gp => {
-          if (!playerStatsMap.has(gp.userId)) {
-            playerStatsMap.set(gp.userId, {
-              userId: gp.userId,
-              displayName: gp.userDisplayName,
-              totalRankPoints: 0,
-              gamesPlayed: 0,
-              totalNormalizedScore: 0,
-            });
-          }
-          const stats = playerStatsMap.get(gp.userId)!;
-          stats.totalNormalizedScore += gp.score;
-        });
-
-        ranksByGame.forEach((ranks, gameId) => {
-            ranks.forEach((rank, userId) => {
-                if(playerStatsMap.has(userId)) {
-                    const stats = playerStatsMap.get(userId)!;
-                    stats.totalRankPoints += rank;
-                    stats.gamesPlayed += 1;
-                }
-            });
-        });
-
-        const finalLeaderboard = Array.from(playerStatsMap.values()).sort((a, b) => {
-            if (a.totalRankPoints !== b.totalRankPoints) {
-                return a.totalRankPoints - b.totalRankPoints; // Lower rank points is better
+            const key = `${gp.userId}-${gp.gameId}`;
+            const existingBest = bestScores.get(key);
+            if (!existingBest || gp.score > existingBest.score) {
+                bestScores.set(key, gp);
             }
-            // Tie-breaker: higher total normalized score is better
-            return b.totalNormalizedScore - a.totalNormalizedScore; 
+        });
+
+        // 5. Aggregate the best scores into the player stats.
+        bestScores.forEach(gp => {
+            if (playerStatsMap.has(gp.userId)) {
+                const stats = playerStatsMap.get(gp.userId)!;
+                stats.totalScore += gp.score;
+                stats.gamesPlayed += 1;
+            }
+        });
+        
+        // 6. Sort the final leaderboard. Higher total score is better.
+        const finalLeaderboard = Array.from(playerStatsMap.values()).sort((a, b) => {
+            return b.totalScore - a.totalScore; 
         });
 
         setLeaderboard(finalLeaderboard);
@@ -135,8 +118,8 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[150px] text-center text-muted-foreground p-4 border-2 border-dashed rounded-lg">
         <Trophy className="h-10 w-10 mb-2 text-primary opacity-50" />
-        <h3 className="text-lg font-semibold">No Scores Yet Today!</h3>
-        <p className="text-sm">Be the first to submit a score to get on the board.</p>
+        <h3 className="text-lg font-semibold">No Members in Group</h3>
+        <p className="text-sm">Add some members to start the competition!</p>
       </div>
     );
   }
@@ -149,20 +132,20 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
                     <TableHead className="w-[15%] text-center">Rank</TableHead>
                     <TableHead className="w-[45%]">Player</TableHead>
                     <TableHead className="w-[20%] text-center">Games</TableHead>
-                    <TableHead className="w-[20%] text-center">Rank Pts</TableHead>
+                    <TableHead className="w-[20%] text-center">Total Score</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {leaderboard.map((player, index) => (
                     <TableRow key={player.userId}>
                         <TableCell className="text-center font-bold text-lg">
-                            {index === 0 && <Trophy className="h-5 w-5 text-yellow-500 inline-block mr-1" />}
+                            {index === 0 && player.totalScore > 0 && <Trophy className="h-5 w-5 text-yellow-500 inline-block mr-1" />}
                             {index + 1}
                         </TableCell>
                         <TableCell className="font-medium">{player.displayName}</TableCell>
                         <TableCell className="text-center">{player.gamesPlayed}</TableCell>
                         <TableCell className="text-center">
-                            <Badge variant="secondary">{player.totalRankPoints}</Badge>
+                            <Badge variant="secondary">{player.totalScore}</Badge>
                         </TableCell>
                     </TableRow>
                 ))}
