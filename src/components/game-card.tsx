@@ -16,6 +16,8 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { useAuth } from "@/contexts/auth-context";
 import { addGameplay } from "@/lib/gameplay";
 import { normalizeScore } from "@/lib/scoring";
+import { parseRawScore } from "@/lib/score-parser";
+import { Textarea } from "@/components/ui/textarea";
 
 interface GameCardProps {
   game: Game;
@@ -26,8 +28,8 @@ interface GameCardProps {
 }
 
 const scoreSchema = z.object({
-  score: z.string().refine(val => !isNaN(parseFloat(val)) && val.trim() !== "", {
-    message: "Score must be a number.",
+  score: z.string().min(1, {
+    message: "Please enter or paste your score.",
   }),
 });
 type ScoreFormData = z.infer<typeof scoreSchema>;
@@ -40,17 +42,28 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
   const form = useForm<ScoreFormData>({
     resolver: zodResolver(scoreSchema),
     defaultValues: {
-      score: "", // Always start fresh, don't show old raw scores
+      score: "", // Always start fresh
     },
   });
 
   const onSubmit: SubmitHandler<ScoreFormData> = async (data) => {
     if (!currentUser) return;
     setIsSubmitting(true);
-    const numericScore = parseFloat(data.score);
+    
+    const rawScore = parseRawScore(game.id, data.score);
+
+    if (rawScore === null) {
+      toast({
+        title: "Invalid Score Format",
+        description: `Could not understand the score for ${game.name}. Please check the format and try again.`,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      const normalizedScore = normalizeScore(game.id, numericScore);
+      const normalizedScore = normalizeScore(game.id, rawScore);
       
       const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
           userId: currentUser.uid,
@@ -68,6 +81,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
         variant: "default",
       });
       onComplete(game.id, normalizedScore);
+      form.reset();
     } catch (error: any) {
       console.error("Submission error:", error);
       toast({
@@ -118,15 +132,26 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                   <FormItem>
                     <Label htmlFor={`score-${game.id}`} className="sr-only">Your Score for {game.name}</Label>
                     <FormControl>
-                      <Input
-                        id={`score-${game.id}`}
-                        type="text" 
-                        inputMode="decimal"
-                        placeholder="Enter your raw score"
-                        {...field}
-                        className="text-base"
-                        aria-describedby={`score-message-${game.id}`}
-                      />
+                      {game.scoreInputType === 'text' ? (
+                          <Textarea
+                            id={`score-${game.id}`}
+                            placeholder="Paste share text here..."
+                            className="text-sm resize-none"
+                            rows={4}
+                            {...field}
+                            aria-describedby={`score-message-${game.id}`}
+                          />
+                      ) : (
+                          <Input
+                            id={`score-${game.id}`}
+                            type="text" 
+                            inputMode="decimal"
+                            placeholder="Enter score here..."
+                            {...field}
+                            className="text-base"
+                            aria-describedby={`score-message-${game.id}`}
+                          />
+                      )}
                     </FormControl>
                     <FormMessage id={`score-message-${game.id}`} />
                   </FormItem>

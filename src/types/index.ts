@@ -9,6 +9,7 @@ export interface Game {
   icon: LucideIcon;
   averageScore: number;
   examplePreviousScores: number[];
+  scoreInputType: 'number' | 'text';
 }
 
 export interface LibraryGame {
