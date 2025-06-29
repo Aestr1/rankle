@@ -26,7 +26,7 @@ export const GAMES_DATA: Game[] = [
   {
     id: 'worldle',
     name: 'Worldle',
-    description: 'Paste your full "Share" text with the emoji grid.',
+    description: 'Paste your full "Share" text. The app will find your score (e.g., 4/6) automatically.',
     link: 'https://worldle.teuteuf.fr/',
     icon: Globe,
     averageScore: 3,
