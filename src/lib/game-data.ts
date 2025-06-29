@@ -6,12 +6,12 @@ export const GAMES_DATA: Game[] = [
   {
     id: 'timeguessr',
     name: 'Timeguessr',
-    description: 'Enter your final score (e.g., 18000).',
+    description: 'Paste your full "Share" text with the score grid.',
     link: 'https://timeguessr.com/',
     icon: Timer,
     averageScore: 18000,
     examplePreviousScores: [15000, 22000, 19000],
-    scoreInputType: 'number',
+    scoreInputType: 'text',
   },
   {
     id: 'wordle',

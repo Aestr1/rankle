@@ -24,9 +24,9 @@ export function normalizeScore(gameId: string, rawScore: number): number {
                  1: 100, // Perfect
                  2: 95,
                  3: 90,
-                 4: 80,  // "B" grade as requested
+                 4: 80,  // "B" grade
                  5: 65,
-                 6: 50,  // A solid score for a last-guess win
+                 6: 50,
                  7: 0,   // Fail state (X/6)
              };
              normalizedScore = scoreMap[rawScore] ?? 0;
@@ -34,8 +34,11 @@ export function normalizeScore(gameId: string, rawScore: number): number {
 
         // Games where score is a percentage of a max score
         case 'timeguessr':
+            // Max score is 50,000 based on share text format
+            normalizedScore = (rawScore / 50000) * 100;
+            break;
         case 'geoguessr':
-            // Max score for both is 25,000
+            // Max score for daily is 25,000
             normalizedScore = (rawScore / 25000) * 100;
             break;
         

@@ -10,31 +10,49 @@
  * @returns A raw numerical score, or null if parsing fails.
  */
 export function parseRawScore(gameId: string, shareText: string): number | null {
-  // For games where user directly inputs a number, just parse it.
+  // Specific parsing logic per game
   switch (gameId) {
-    case 'timeguessr':
+    case 'timeguessr': {
+      // Look for "39,838/50,000" format
+      const scoreMatch = shareText.match(/(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)/);
+      if (scoreMatch && scoreMatch[1]) {
+        const score = parseFloat(scoreMatch[1].replace(/,/g, ''));
+        if (!isNaN(score)) {
+          return score;
+        }
+      }
+      // If regex fails, try parsing as a direct number (e.g., user just types "39838")
+      const directTimeguessrScore = parseFloat(shareText);
+      return isNaN(directTimeguessrScore) ? null : directTimeguessrScore;
+    }
+    
+    case 'wordle':
+    case 'worldle':
+    case 'emovi':
+    case 'bandle': {
+      // Look for "X/6" format
+      const guessMatch = shareText.match(/([1-6X])\/6/);
+      if (guessMatch && guessMatch[1]) {
+        const result = guessMatch[1];
+        if (result === 'X') {
+          return 7; // Represents a fail state
+        }
+        const guesses = parseInt(result, 10);
+        if (!isNaN(guesses)) {
+          return guesses;
+        }
+      }
+      return null; // Don't fall back to number parsing for these games
+    }
+
+    // Default to direct number parsing for these and any other games
     case 'geoguessr':
     case 'wikispeedrun':
     case 'globle':
     case 'connections':
+    default: {
       const directScore = parseFloat(shareText);
       return isNaN(directScore) ? null : directScore;
-  }
-
-  // For games that use a text/emoji format (e.g., Wordle, Worldle).
-  // The common pattern is a number of guesses out of a total, like "3/6" or "X/6".
-  const guessMatch = shareText.match(/([1-6X])\/6/);
-  if (guessMatch && guessMatch[1]) {
-    const result = guessMatch[1];
-    if (result === 'X') {
-      return 7; // Represents a fail state, more than 6 guesses
-    }
-    const guesses = parseInt(result, 10);
-    if (!isNaN(guesses)) {
-      return guesses;
     }
   }
-
-  // Fallback for cases where parsing fails.
-  return null;
 }
