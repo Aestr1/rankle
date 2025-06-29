@@ -19,12 +19,17 @@ export function normalizeScore(gameId: string, rawScore: number): number {
         case 'worldle':
         case 'emovi':
         case 'bandle':
-             if (rawScore > 6) { // Fail state (e.g., parser returns 7 for 'X/6')
-                normalizedScore = 0;
-             } else {
-                // This gives a range from 100 (1 guess) to 20 (6 guesses)
-                normalizedScore = 100 - (rawScore - 1) * 16;
-             }
+             // This scoring curve is weighted to reward an average score (4/6) more highly.
+             const scoreMap: {[key: number]: number} = {
+                 1: 100, // Perfect
+                 2: 95,
+                 3: 90,
+                 4: 80,  // "B" grade as requested
+                 5: 65,
+                 6: 50,  // A solid score for a last-guess win
+                 7: 0,   // Fail state (X/6)
+             };
+             normalizedScore = scoreMap[rawScore] ?? 0;
              break;
 
         // Games where score is a percentage of a max score
