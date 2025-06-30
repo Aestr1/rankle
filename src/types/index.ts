@@ -17,7 +17,7 @@ export interface Game {
 }
 
 export interface LibraryGame {
-  id: string;
+  id:string;
   name: string;
   link: string;
   rating: number; // Rating out of 10 for weighted selection
@@ -41,6 +41,8 @@ export interface PlayGroup {
   joinCode: string; // This might be sensitive, consider how it's used/fetched
   members: PlayGroupMember[];
   createdAt: any; // Firestore timestamp or Date
+  isPublic: boolean;
+  memberCount: number;
 }
 
 export interface Gameplay {

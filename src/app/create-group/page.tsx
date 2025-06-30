@@ -24,11 +24,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trophy, PlusCircle, Loader2 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { AppFooter } from '@/components/app-footer';
+import { Switch } from '@/components/ui/switch';
 
 const createGroupSchema = z.object({
   groupName: z.string().min(3, { message: "Group name must be at least 3 characters." }).max(50),
   selectedGames: z.array(z.string()).min(1, { message: "Select at least one game." }).max(20, { message: "You can select up to 20 games." }),
   joinCode: z.string().min(4, { message: "Join code must be at least 4 characters." }).max(20),
+  isPublic: z.boolean().default(false),
 });
 
 type CreateGroupFormData = z.infer<typeof createGroupSchema>;
@@ -49,6 +51,7 @@ export default function CreateGroupPage() {
       groupName: "",
       selectedGames: [],
       joinCode: "",
+      isPublic: false,
     },
     mode: 'onBlur',
   });
@@ -90,6 +93,7 @@ export default function CreateGroupPage() {
         groupName: data.groupName,
         selectedGames: data.selectedGames,
         joinCode: data.joinCode,
+        isPublic: data.isPublic,
         user: {
           uid: currentUser.uid,
           displayName: currentUser.displayName
@@ -178,6 +182,29 @@ export default function CreateGroupPage() {
                         Share this code with friends so they can join your group.
                       </FormDescription>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="isPublic"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-muted/50">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          Make Group Public?
+                        </FormLabel>
+                        <FormDescription>
+                          Public groups are visible to everyone on the browse page.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />

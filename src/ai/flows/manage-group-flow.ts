@@ -7,18 +7,21 @@
  * - joinPlayGroup - Allows a user to join an existing group using a join code.
  * - deleteGroup - Allows the group creator to delete the group.
  * - leaveGroup - Allows a member to leave a group.
+ * - getPublicGroups - Fetches all public groups with search and sort.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getAdminDb } from '@/lib/firebase-admin'; // Use the Admin SDK
-import { FieldValue } from 'firebase-admin/firestore'; // Use the Admin SDK's FieldValue
+import { FieldValue, collection, query, where, getDocs } from 'firebase-admin/firestore'; // Use the Admin SDK's FieldValue
+import type { PlayGroup } from '@/types';
 
 // Input schema for creating a group
 const CreateGroupInputSchema = z.object({
   groupName: z.string(),
   selectedGames: z.array(z.string()),
   joinCode: z.string(),
+  isPublic: z.boolean(),
   user: z.object({
     uid: z.string(),
     displayName: z.string().nullable(),
@@ -74,6 +77,15 @@ const LeaveGroupInputSchema = z.object({
 });
 export type LeaveGroupInput = z.infer<typeof LeaveGroupInputSchema>;
 
+// Input schema for getting public groups
+const GetPublicGroupsInputSchema = z.object({
+    searchTerm: z.string().optional(),
+    sortBy: z.enum(['newest', 'members']).default('members'),
+});
+export type GetPublicGroupsInput = z.infer<typeof GetPublicGroupsInputSchema>;
+
+const GetPublicGroupsOutputSchema = z.array(z.any());
+
 
 // Exported functions that the client will call
 export async function createPlayGroup(input: CreateGroupInput): Promise<CreateGroupOutput> {
@@ -92,6 +104,10 @@ export async function leaveGroup(input: LeaveGroupInput): Promise<MutateGroupOut
     return leaveGroupFlow(input);
 }
 
+export async function getPublicGroups(input: GetPublicGroupsInput): Promise<PlayGroup[]> {
+    return getPublicGroupsFlow(input);
+}
+
 
 const SERVER_CONFIG_ERROR = "Server configuration error: The FIREBASE_SERVICE_ACCOUNT environment variable is not set. Please add it to your .env file and restart the server.";
 
@@ -108,7 +124,7 @@ const createGroupFlow = ai.defineFlow(
       return { error: SERVER_CONFIG_ERROR };
     }
 
-    const { groupName, selectedGames, joinCode, user } = input;
+    const { groupName, selectedGames, joinCode, isPublic, user } = input;
     const lowerCaseJoinCode = joinCode.toLowerCase();
 
     // Use adminDb to bypass client-side security rules for this check
@@ -130,6 +146,8 @@ const createGroupFlow = ai.defineFlow(
       members: [{ uid: user.uid, displayName: user.displayName }],
       memberUids: [user.uid],
       createdAt: FieldValue.serverTimestamp(), // Use admin FieldValue
+      isPublic: isPublic,
+      memberCount: 1,
     };
 
     const groupDocRef = await groupsRef.add(newGroup);
@@ -178,7 +196,8 @@ const joinGroupFlow = ai.defineFlow(
                 uid: user.uid,
                 displayName: user.displayName,
             }),
-            memberUids: FieldValue.arrayUnion(user.uid)
+            memberUids: FieldValue.arrayUnion(user.uid),
+            memberCount: FieldValue.increment(1),
         });
 
         return {
@@ -249,8 +268,51 @@ const leaveGroupFlow = ai.defineFlow(
     await groupRef.update({
       members: FieldValue.arrayRemove({ uid: userId, displayName: userDisplayName }),
       memberUids: FieldValue.arrayRemove(userId),
+      memberCount: FieldValue.increment(-1),
     });
 
     return { success: true };
   }
+);
+
+
+// Genkit flow for fetching public groups
+const getPublicGroupsFlow = ai.defineFlow(
+    {
+        name: 'getPublicGroupsFlow',
+        inputSchema: GetPublicGroupsInputSchema,
+        outputSchema: GetPublicGroupsOutputSchema,
+    },
+    async ({ searchTerm, sortBy }) => {
+        const adminDb = getAdminDb();
+        if (!adminDb) return [];
+
+        const groupsRef = collection(adminDb, 'groups');
+        const q = query(groupsRef, where('isPublic', '==', true));
+        const querySnapshot = await getDocs(q);
+        
+        let groups: PlayGroup[] = [];
+        querySnapshot.forEach((doc) => {
+            groups.push({ id: doc.id, ...doc.data() } as PlayGroup);
+        });
+
+        // Filter in memory since Firestore has query limitations
+        if (searchTerm && searchTerm.trim() !== '') {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            groups = groups.filter(group => group.name.toLowerCase().includes(lowercasedTerm));
+        }
+
+        // Sort in memory
+        if (sortBy === 'newest') {
+            groups.sort((a, b) => {
+                const dateA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+                const dateB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+                return dateB - dateA;
+            });
+        } else { // Default to 'members' for popularity
+            groups.sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0));
+        }
+
+        return groups;
+    }
 );

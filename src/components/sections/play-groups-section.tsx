@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users2, PlusCircle, UserPlus } from "lucide-react";
+import { Users2, PlusCircle, UserPlus, Globe } from "lucide-react";
 
 export function PlayGroupsSection() {
   return (
@@ -16,22 +16,27 @@ export function PlayGroupsSection() {
             <span id="play-groups-title">Play Groups</span>
           </CardTitle>
            <CardDescription>
-            For a more personal challenge, create or join a private group to compete with friends on a custom set of games.
+            Create or join a private group to compete with friends, or browse public groups to find a new challenge.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-              <Link href="/create-group">
-                <PlusCircle className="mr-2 h-5 w-5" /> Create Group
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/join-group">
-                <UserPlus className="mr-2 h-5 w-5" /> Join Group
-              </Link>
-            </Button>
-          </div>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                <Link href="/create-group">
+                  <PlusCircle className="mr-2 h-5 w-5" /> Create Group
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/join-group">
+                  <UserPlus className="mr-2 h-5 w-5" /> Join Group
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/public-groups">
+                  <Globe className="mr-2 h-5 w-5" /> Browse Groups
+                </Link>
+              </Button>
+            </div>
         </CardContent>
       </Card>
     </section>
