@@ -121,6 +121,8 @@ export function GlobalLeaderboard() {
                     <TableRow key={player.userId}>
                         <TableCell className="text-center font-bold text-lg">
                             {index === 0 && player.totalScore > 0 && <Trophy className="h-5 w-5 text-yellow-500 inline-block mr-1" />}
+                            {index === 1 && player.totalScore > 0 && <Trophy className="h-5 w-5 text-slate-400 inline-block mr-1" />}
+                            {index === 2 && player.totalScore > 0 && <Trophy className="h-5 w-5 text-amber-600 inline-block mr-1" />}
                             {index + 1}
                         </TableCell>
                         <TableCell className="font-medium">{player.displayName}</TableCell>
