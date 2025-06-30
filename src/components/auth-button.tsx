@@ -28,15 +28,15 @@ export function AuthButton() {
 
   if (currentUser) {
     return (
-      <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center gap-2">
-          <Button asChild variant="secondary">
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Button asChild variant="secondary" className="hidden sm:flex">
             <Link href="/my-groups">
               <Layers className="mr-2 h-4 w-4" />
               My Groups
             </Link>
           </Button>
-          <Button asChild variant="secondary">
+          <Button asChild variant="secondary" className="hidden sm:flex">
             <Link href="/games-library">
               <Library className="mr-2 h-4 w-4" />
               Games Library
@@ -64,13 +64,13 @@ export function AuthButton() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="md:hidden">
+            <DropdownMenuItem asChild className="sm:hidden">
                 <Link href="/my-groups">
                     <Layers className="mr-2 h-4 w-4" />
                     My Groups
                 </Link>
             </DropdownMenuItem>
-             <DropdownMenuItem asChild className="md:hidden">
+             <DropdownMenuItem asChild className="sm:hidden">
               <Link href="/games-library">
                 <Library className="mr-2 h-4 w-4" />
                 Games Library
