@@ -158,7 +158,7 @@ export default function CreateGroupPage() {
                     <FormItem>
                       <FormLabel className="text-lg">Group Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="E.g., Weekend Warriors" {...field} className="text-base" />
+                        <Input placeholder="E.g., Weekend Warriors" {...field} className="text-base" autoComplete="off" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -172,7 +172,7 @@ export default function CreateGroupPage() {
                     <FormItem>
                       <FormLabel className="text-lg">Set a Join Code / Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="E.g., WKD123" {...field} className="text-base" />
+                        <Input placeholder="E.g., WKD123" {...field} className="text-base" autoComplete="off" />
                       </FormControl>
                       <FormDescription>
                         Share this code with friends so they can join your group.
@@ -189,6 +189,7 @@ export default function CreateGroupPage() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="flex-grow"
+                            autoComplete="off"
                         />
                         <div className="flex gap-2">
                             <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as GameCategory | "all")}>

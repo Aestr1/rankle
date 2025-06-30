@@ -132,7 +132,7 @@ export default function JoinGroupPage() {
                     <FormItem>
                       <FormLabel className="text-lg">Group Join Code</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter code..." {...field} className="text-base" />
+                        <Input placeholder="Enter code..." {...field} className="text-base" autoComplete="off" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

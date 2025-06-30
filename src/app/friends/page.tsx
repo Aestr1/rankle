@@ -152,7 +152,7 @@ export default function FriendsPage() {
                                 <FormLabel>Friend's Email</FormLabel>
                                 <div className="flex gap-2">
                                 <FormControl>
-                                    <Input placeholder="friend@example.com" {...field} />
+                                    <Input placeholder="friend@example.com" {...field} autoComplete="off" />
                                 </FormControl>
                                 <Button type="submit" disabled={form.formState.isSubmitting}>
                                     {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : "Add"}

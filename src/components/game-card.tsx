@@ -211,6 +211,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                                 rows={4}
                                 {...field}
                                 aria-describedby={`score-message-${game.id}`}
+                                autoComplete="off"
                               />
                           ) : (
                               <Input
@@ -221,6 +222,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                                 {...field}
                                 className="text-base pr-12"
                                 aria-describedby={`score-message-${game.id}`}
+                                autoComplete="off"
                               />
                           )}
                         </FormControl>

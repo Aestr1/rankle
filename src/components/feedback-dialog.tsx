@@ -133,7 +133,7 @@ export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDial
                 <FormItem>
                   <FormLabel>Subject</FormLabel>
                   <FormControl>
-                    <Input placeholder="E.g., Suggestion for a new game" {...field} />
+                    <Input placeholder="E.g., Suggestion for a new game" {...field} autoComplete="off" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,6 +150,7 @@ export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDial
                       placeholder={form.watch('type') === 'bug' ? "Please describe the bug, including steps to reproduce it." : "Please describe your suggestion in detail."}
                       className="resize-y min-h-[120px]"
                       {...field}
+                      autoComplete="off"
                     />
                   </FormControl>
                   <FormMessage />
