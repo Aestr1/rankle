@@ -1,6 +1,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 
+export type GameCategory = 'Word & Letters' | 'Geography & Maps' | 'Logic & Puzzle' | 'Trivia & Knowledge' | 'Media & Pop Culture' | 'Creative & Other';
+
 export interface Game {
   id: string;
   name: string;
@@ -19,6 +21,7 @@ export interface LibraryGame {
   name: string;
   link: string;
   rating: number; // Rating out of 10 for weighted selection
+  category: GameCategory;
 }
 
 export interface PlayGroupMember {

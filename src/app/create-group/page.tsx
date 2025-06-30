@@ -1,14 +1,18 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from 'next/navigation';
+import Link from "next/link";
 
-// Server flow for creating a group
 import { createPlayGroup, type CreateGroupInput } from '@/ai/flows/manage-group-flow';
+import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
+import type { LibraryGame, GameCategory } from "@/types";
+import { LIBRARY_GAMES_DATA } from "@/lib/library-game-data";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,18 +20,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GAMES_DATA } from "@/lib/game-data";
-import type { Game } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trophy, PlusCircle, Loader2 } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
-import { useAuth } from "@/contexts/auth-context";
-import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
 import { AppFooter } from '@/components/app-footer';
 
 const createGroupSchema = z.object({
   groupName: z.string().min(3, { message: "Group name must be at least 3 characters." }).max(50),
-  selectedGames: z.array(z.string()).min(1, { message: "Select at least one game." }).max(10, { message: "You can select up to 10 games." }),
+  selectedGames: z.array(z.string()).min(1, { message: "Select at least one game." }).max(20, { message: "You can select up to 20 games." }),
   joinCode: z.string().min(4, { message: "Join code must be at least 4 characters." }).max(20),
 });
 
@@ -39,6 +39,10 @@ export default function CreateGroupPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<GameCategory | "all">("all");
+  const [sortOrder, setSortOrder] = useState("popularity");
+
   const form = useForm<CreateGroupFormData>({
     resolver: zodResolver(createGroupSchema),
     defaultValues: {
@@ -48,6 +52,27 @@ export default function CreateGroupPage() {
     },
     mode: 'onBlur',
   });
+  
+  const categories: (GameCategory | "all")[] = ['all', ...Array.from(new Set(LIBRARY_GAMES_DATA.map(g => g.category)))];
+
+  const filteredAndSortedGames = useMemo(() => {
+    return LIBRARY_GAMES_DATA
+      .filter(game => {
+        const matchesCategory = categoryFilter === 'all' || game.category === categoryFilter;
+        const matchesSearch = game.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) => {
+        if (sortOrder === 'popularity') {
+          return b.rating - a.rating; // Higher rating first
+        }
+        if (sortOrder === 'name') {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
+      });
+  }, [searchTerm, categoryFilter, sortOrder]);
+
 
   const onSubmit: SubmitHandler<CreateGroupFormData> = async (data) => {
     if (!currentUser) {
@@ -113,14 +138,14 @@ export default function CreateGroupPage() {
         </div>
       </header>
       <main className="flex-grow container mx-auto p-4 md:p-8 flex justify-center items-start">
-        <Card className="w-full max-w-2xl shadow-xl">
+        <Card className="w-full max-w-3xl shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
               <PlusCircle className="mr-3 h-8 w-8 text-accent" />
               Create a New Play Group
             </CardTitle>
             <CardDescription>
-              Set up a custom daily challenge for you and your friends. Select up to 10 games.
+              Set up a custom daily challenge for you and your friends. Select up to 20 games.
             </CardDescription>
           </CardHeader>
           <Form {...form}>
@@ -158,13 +183,44 @@ export default function CreateGroupPage() {
                 />
 
                 <FormItem>
-                  <FormLabel className="text-lg">Select Games (up to 10)</FormLabel>
+                    <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                        <Input
+                            placeholder="Search games..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="flex-grow"
+                        />
+                        <div className="flex gap-2">
+                            <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as GameCategory | "all")}>
+                                <SelectTrigger className="w-full sm:w-[200px]">
+                                    <SelectValue placeholder="Filter by category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categories.map(category => (
+                                        <SelectItem key={category} value={category}>
+                                            {category === 'all' ? 'All Categories' : category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={sortOrder} onValueChange={setSortOrder}>
+                                <SelectTrigger className="w-full sm:w-[150px]">
+                                    <SelectValue placeholder="Sort by" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="popularity">Popularity</SelectItem>
+                                    <SelectItem value="name">Name (A-Z)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                  <FormLabel className="text-lg">Select Games (up to 20)</FormLabel>
                    <FormDescription>
                       Choose the games to include in this group's daily challenge.
                     </FormDescription>
                   <ScrollArea className="h-72 w-full rounded-md border p-4 mt-2">
                     <div className="space-y-3">
-                      {GAMES_DATA.map((game: Game) => (
+                      {filteredAndSortedGames.length > 0 ? filteredAndSortedGames.map((game: LibraryGame) => (
                         <FormField
                           key={game.id}
                           control={form.control}
@@ -177,10 +233,10 @@ export default function CreateGroupPage() {
                                   onCheckedChange={(checked) => {
                                     const currentSelection = field.value || [];
                                     if (checked) {
-                                      if (currentSelection.length < 10) {
+                                      if (currentSelection.length < 20) {
                                          field.onChange([...currentSelection, game.id]);
                                       } else {
-                                        toast({ title: "Limit Reached", description: "You can only select up to 10 games.", variant: "destructive" });
+                                        toast({ title: "Limit Reached", description: "You can only select up to 20 games.", variant: "destructive" });
                                       }
                                     } else {
                                       field.onChange(currentSelection.filter((value) => value !== game.id));
@@ -188,13 +244,18 @@ export default function CreateGroupPage() {
                                   }}
                                 />
                               </FormControl>
-                              <FormLabel className="font-normal text-base">
-                                {game.name}
-                              </FormLabel>
+                              <div className="flex flex-col">
+                                <FormLabel className="font-normal text-base leading-tight">
+                                    {game.name}
+                                </FormLabel>
+                                 <p className="text-xs text-muted-foreground">{game.category}</p>
+                              </div>
                             </FormItem>
                           )}
                         />
-                      ))}
+                      )) : (
+                        <p className="text-center text-muted-foreground py-8">No games match your search or filter.</p>
+                      )}
                     </div>
                   </ScrollArea>
                   <FormMessage>{form.formState.errors.selectedGames?.message}</FormMessage>
