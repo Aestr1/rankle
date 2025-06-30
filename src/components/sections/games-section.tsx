@@ -5,7 +5,7 @@ import { GAMES_DATA } from "@/lib/game-data";
 import { GameCard } from "@/components/game-card";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Globe } from "lucide-react";
+import { Globe, Megaphone } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserGameplaysForDate } from "@/lib/gameplay";
 import type { Gameplay, Game } from "@/types";
@@ -70,23 +70,39 @@ export function GamesSection() {
 
      return (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {allGamesForToday.map((game: Game) => {
+            {allGamesForToday.map((game: Game, index: number) => {
               // Find the best score for the current game to handle multiple submissions
               const playsForThisGame = todaysGameplays.filter(gp => gp.gameId === game.id);
               const bestPlay = playsForThisGame.length > 0
                 ? playsForThisGame.reduce((best, current) => current.score > best.score ? current : best)
                 : null;
-
-              return (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  isCompleted={!!bestPlay}
-                  submittedScore={bestPlay?.score}
-                  onComplete={handleGameComplete}
-                  groupId={null} // This signifies a global game
-                />
+              
+              const gameCard = (
+                 <GameCard
+                    key={game.id}
+                    game={game}
+                    isCompleted={!!bestPlay}
+                    submittedScore={bestPlay?.score}
+                    onComplete={handleGameComplete}
+                    groupId={null} // This signifies a global game
+                  />
               );
+
+              // Insert an ad after the second card (index 1)
+              if (index === 1) {
+                  const adCard = (
+                    <Card key="ad-in-grid" className="border-dashed border-2 hover:border-primary transition-colors bg-muted/20 flex flex-col h-full">
+                        <CardContent className="p-4 text-center text-muted-foreground flex flex-col items-center justify-center flex-grow">
+                            <Megaphone className="w-10 h-10 mb-2 text-primary/50" />
+                            <p className="font-semibold text-lg">Advertisement</p>
+                            <p className="text-sm">Your ad unit would be displayed here.</p>
+                        </CardContent>
+                    </Card>
+                 );
+                 return <React.Fragment key={game.id + '-with-ad'}>{gameCard}{adCard}</React.Fragment>
+              }
+
+              return gameCard;
             })}
           </div>
      )
