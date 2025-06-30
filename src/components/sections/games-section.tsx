@@ -1,4 +1,3 @@
-
 "use client";
 
 import { GAMES_DATA } from "@/lib/game-data";
@@ -15,10 +14,12 @@ export function GamesSection() {
   const { currentUser } = useAuth();
   const [todaysGameplays, setTodaysGameplays] = useState<Gameplay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [gameOfTheDay, setGameOfTheDay] = useState<Game | null>(null);
 
-  // Get the featured game for today
-  const gameOfTheDay = getGameOfTheDay();
-  const allGamesForToday = [gameOfTheDay, ...GAMES_DATA];
+  useEffect(() => {
+    // This runs only on the client, after hydration, preventing a mismatch.
+    setGameOfTheDay(getGameOfTheDay());
+  }, []);
 
   useEffect(() => {
     const fetchTodaysScores = async () => {
@@ -29,6 +30,7 @@ export function GamesSection() {
       }
       setIsLoading(true);
       try {
+        // Use a client-side new Date() to be consistent
         const gameplays = await getUserGameplaysForDate(currentUser.uid, new Date());
         setTodaysGameplays(gameplays);
       } catch (error) {
@@ -58,15 +60,19 @@ export function GamesSection() {
 
 
   const renderGameCards = () => {
-     if (isLoading && currentUser) {
+     // Show skeletons if we're waiting for auth or haven't set the game of the day yet.
+     if ((isLoading && currentUser) || !gameOfTheDay) {
+        const skeletonCount = GAMES_DATA.length + 2; // +1 for game of day, +1 for ad
         return (
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {allGamesForToday.map((game) => (
-                <div key={game.id} className="h-96 bg-muted rounded-lg animate-pulse"></div>
+              {[...Array(skeletonCount)].map((_, i) => (
+                <div key={`skeleton-${i}`} className="h-96 bg-muted rounded-lg animate-pulse"></div>
               ))}
             </div>
         )
      }
+
+     const allGamesForToday = [gameOfTheDay, ...GAMES_DATA];
 
      return (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
