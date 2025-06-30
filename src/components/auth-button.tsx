@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -14,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut, User as UserIcon, Loader2, Layers, BarChart3, Users } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, Loader2, Layers, BarChart3, Users, Library } from "lucide-react";
 
 export function AuthButton() {
   const { currentUser, loading, signInWithGoogle, signOutUser } = useAuth();
@@ -30,12 +29,20 @@ export function AuthButton() {
   if (currentUser) {
     return (
       <div className="flex items-center gap-4">
-        <Button asChild variant="secondary">
-          <Link href="/my-groups">
-            <Layers className="mr-2 h-4 w-4" />
-            My Groups
-          </Link>
-        </Button>
+        <div className="hidden md:flex items-center gap-2">
+          <Button asChild variant="secondary">
+            <Link href="/my-groups">
+              <Layers className="mr-2 h-4 w-4" />
+              My Groups
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/games-library">
+              <Library className="mr-2 h-4 w-4" />
+              Games Library
+            </Link>
+          </Button>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -57,13 +64,25 @@ export function AuthButton() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-             <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="md:hidden">
+                <Link href="/my-groups">
+                    <Layers className="mr-2 h-4 w-4" />
+                    My Groups
+                </Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem asChild className="md:hidden">
+              <Link href="/games-library">
+                <Library className="mr-2 h-4 w-4" />
+                Games Library
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <Link href="/analytics">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Analytics
               </Link>
             </DropdownMenuItem>
-             <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild>
               <Link href="/friends">
                 <Users className="mr-2 h-4 w-4" />
                 Friends
@@ -81,9 +100,17 @@ export function AuthButton() {
   }
 
   return (
-    <Button onClick={signInWithGoogle} variant="outline">
-      <LogIn className="mr-2 h-4 w-4" />
-      Sign in with Google
-    </Button>
+    <div className="flex items-center gap-2">
+        <Button asChild variant="secondary">
+            <Link href="/games-library">
+                <Library className="mr-2 h-4 w-4" />
+                Games Library
+            </Link>
+        </Button>
+        <Button onClick={signInWithGoogle} variant="outline">
+          <LogIn className="mr-2 h-4 w-4" />
+          Sign in
+        </Button>
+    </div>
   );
 }
