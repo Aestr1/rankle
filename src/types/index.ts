@@ -7,15 +7,18 @@ export interface Game {
   description: string;
   link: string;
   icon: LucideIcon;
-  averageScore: number;
-  examplePreviousScores: number[];
+  averageScore?: number;
+  examplePreviousScores?: number[];
   scoreInputType: 'number' | 'text';
   exampleShareText?: string;
+  isFeatured?: boolean;
 }
 
 export interface LibraryGame {
+  id: string;
   name: string;
   link: string;
+  rating: number; // Rating out of 10 for weighted selection
 }
 
 export interface PlayGroupMember {

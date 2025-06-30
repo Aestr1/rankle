@@ -8,12 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Globe } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { getUserGameplaysForDate } from "@/lib/gameplay";
-import type { Gameplay } from "@/types";
+import type { Gameplay, Game } from "@/types";
+import { getGameOfTheDay } from "@/lib/game-of-the-day";
 
 export function GamesSection() {
   const { currentUser } = useAuth();
   const [todaysGameplays, setTodaysGameplays] = useState<Gameplay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Get the featured game for today
+  const gameOfTheDay = getGameOfTheDay();
+  const allGamesForToday = [gameOfTheDay, ...GAMES_DATA];
 
   useEffect(() => {
     const fetchTodaysScores = async () => {
@@ -56,7 +61,7 @@ export function GamesSection() {
      if (isLoading && currentUser) {
         return (
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {GAMES_DATA.map((game) => (
+              {allGamesForToday.map((game) => (
                 <div key={game.id} className="h-96 bg-muted rounded-lg animate-pulse"></div>
               ))}
             </div>
@@ -65,7 +70,7 @@ export function GamesSection() {
 
      return (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {GAMES_DATA.map((game) => {
+            {allGamesForToday.map((game: Game) => {
               // Find the best score for the current game to handle multiple submissions
               const playsForThisGame = todaysGameplays.filter(gp => gp.gameId === game.id);
               const bestPlay = playsForThisGame.length > 0

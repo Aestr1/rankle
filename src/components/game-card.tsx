@@ -11,7 +11,7 @@ import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, ExternalLink, Loader2, Info, ClipboardPaste } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, Info, ClipboardPaste, Star } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/auth-context";
 import { addGameplay } from "@/lib/gameplay";
@@ -78,6 +78,18 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
     if (!currentUser) return;
     setIsSubmitting(true);
     
+    // If it's the featured game, we don't normalize or save to the leaderboard.
+    if (game.isFeatured) {
+        toast({
+            title: "Thanks for playing!",
+            description: `Score submitted for the featured game: ${game.name}.`,
+        });
+        onComplete(game.id, 0); // Pass a dummy score to trigger UI update
+        setIsSubmitting(false);
+        form.reset();
+        return;
+    }
+    
     const rawScore = parseRawScore(game.id, data.score);
 
     if (rawScore === null) {
@@ -118,6 +130,12 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
     }
   };
 
+  const cardBorderClass = game.isFeatured
+    ? 'border-amber-500 border-2 bg-amber-500/10'
+    : isCompleted
+    ? 'border-green-500 border-2 bg-green-500/10'
+    : 'border-border';
+
   return (
     <>
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
@@ -130,10 +148,14 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
             <AlertDialogDescription>
               <div className="space-y-3 py-2">
                 <p>Could not understand the score for {game.name}. Please paste the full 'Share' text from the game, including the title and emoji grid.</p>
-                <p className="font-semibold">For example:</p>
-                <pre className="text-xs bg-muted p-3 rounded-md whitespace-pre-wrap">
-                  <code>{game.exampleShareText}</code>
-                </pre>
+                {game.exampleShareText && (
+                  <>
+                  <p className="font-semibold">For example:</p>
+                  <pre className="text-xs bg-muted p-3 rounded-md whitespace-pre-wrap">
+                    <code>{game.exampleShareText}</code>
+                  </pre>
+                  </>
+                )}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -143,7 +165,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className={`shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02] flex flex-col ${isCompleted ? 'border-green-500 border-2 bg-green-500/10' : 'border-border'}`}>
+      <Card className={`shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02] flex flex-col ${cardBorderClass}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center text-2xl font-headline text-primary">
@@ -232,16 +254,34 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
               </form>
             </Form>
           ) : (
-            submittedScore !== null && submittedScore !== undefined && (
-              <div className="text-center">
-                <p className="text-lg font-medium">Your score: {submittedScore} / 100</p>
-                <p className="text-xs text-muted-foreground">Normalized score saved.</p>
-              </div>
-            )
+            <>
+              {game.isFeatured ? (
+                 <div className="text-center">
+                  <p className="text-lg font-medium">Thanks for playing!</p>
+                  <p className="text-xs text-muted-foreground">Featured game completed.</p>
+                </div>
+              ) : (
+                submittedScore !== null && submittedScore !== undefined && (
+                  <div className="text-center">
+                    <p className="text-lg font-medium">Your score: {submittedScore} / 100</p>
+                    <p className="text-xs text-muted-foreground">Normalized score saved.</p>
+                  </div>
+                )
+              )}
+            </>
           )}
         </CardContent>
-        <CardFooter className="text-xs text-muted-foreground mt-auto">
-          Average raw score: {game.averageScore}
+        <CardFooter className="text-xs text-muted-foreground mt-auto flex items-center justify-between">
+            {game.isFeatured ? (
+                <div className="flex items-center text-amber-600 dark:text-amber-400">
+                    <Star className="w-4 h-4 mr-1.5" />
+                    <span className="font-semibold">Game of the Day</span>
+                </div>
+            ) : (
+                <span>
+                    {game.averageScore ? `Average raw score: ${game.averageScore}` : ''}
+                </span>
+            )}
         </CardFooter>
       </Card>
     </>
