@@ -165,7 +165,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className={`shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02] flex flex-col ${cardBorderClass}`}>
+      <Card className={`shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02] flex flex-col h-full ${cardBorderClass}`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center text-2xl font-headline text-primary">
