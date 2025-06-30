@@ -1,8 +1,10 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, Bug } from 'lucide-react';
+import { Lightbulb, Bug, Library } from 'lucide-react';
 import { FeedbackDialog } from './feedback-dialog';
 
 export function AppFooter() {
@@ -34,6 +36,12 @@ export function AppFooter() {
                          <Button onClick={() => openDialog('bug')} variant="outline" size="sm">
                             <Bug className="mr-2 h-4 w-4" />
                             Report a Bug
+                        </Button>
+                        <Button asChild variant="outline" size="sm">
+                            <Link href="/games-library">
+                                <Library className="mr-2 h-4 w-4" />
+                                Games Library
+                            </Link>
                         </Button>
                     </div>
                 </div>

@@ -14,8 +14,8 @@ export interface Game {
 }
 
 export interface LibraryGame {
-  id: string;
-  name:string;
+  name: string;
+  link: string;
 }
 
 export interface PlayGroupMember {
