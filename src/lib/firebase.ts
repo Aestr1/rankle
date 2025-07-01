@@ -3,13 +3,20 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
-let firebaseConfig: { [key: string]: string | undefined };
+let firebaseConfig: object;
 
-// When deployed to Firebase App Hosting, the config is provided as an env var
-if (process.env.FIREBASE_WEBAPP_CONFIG) {
-    firebaseConfig = JSON.parse(process.env.FIREBASE_WEBAPP_CONFIG);
+// When deployed to Firebase App Hosting, NEXT_PUBLIC_FIREBASE_CONFIG will be set via next.config.js.
+if (process.env.NEXT_PUBLIC_FIREBASE_CONFIG) {
+    try {
+        // Use the config provided by App Hosting.
+        firebaseConfig = JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_CONFIG);
+    } catch (e) {
+        console.error("Could not parse FIREBASE_CONFIG.", e);
+        // Fallback to empty config to avoid crashing, though Firebase will fail to initialize.
+        firebaseConfig = {};
+    }
 } else {
-    // For local development, use the .env file
+    // For local development, construct the config from individual .env variables.
     firebaseConfig = {
       apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
       authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -20,7 +27,6 @@ if (process.env.FIREBASE_WEBAPP_CONFIG) {
       measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
     };
 }
-
 
 // Initialize Firebase
 const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
