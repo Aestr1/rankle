@@ -45,6 +45,24 @@ export async function getGroupGameplays(groupId: string, date: Date): Promise<Ga
 }
 
 /**
+ * Fetches all gameplay records for a specific group across all time.
+ */
+export async function getAllGroupGameplays(groupId: string): Promise<Gameplay[]> {
+  const q = query(
+    collection(db, "gameplays"),
+    where("groupId", "==", groupId)
+  );
+
+  const querySnapshot = await getDocs(q);
+  const gameplays: Gameplay[] = [];
+  querySnapshot.forEach((doc) => {
+    gameplays.push({ id: doc.id, ...doc.data() } as Gameplay);
+  });
+  return gameplays;
+}
+
+
+/**
  * Fetches all global gameplay records for a given date.
  */
 export async function getGlobalGameplays(date: Date): Promise<Gameplay[]> {

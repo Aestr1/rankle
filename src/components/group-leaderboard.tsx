@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Loader2, Trophy, Info } from 'lucide-react';
-import { getGroupGameplays } from '@/lib/gameplay';
+import { getAllGroupGameplays, getGroupGameplays } from '@/lib/gameplay';
 import type { Gameplay, PlayGroup } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { doc, getDoc } from 'firebase/firestore';
 
 interface GroupLeaderboardProps {
   groupId: string;
+  type: 'overall' | 'daily';
 }
 
 interface PlayerStats {
@@ -20,7 +21,7 @@ interface PlayerStats {
   gamesPlayed: number;
 }
 
-export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
+export function GroupLeaderboard({ groupId, type }: GroupLeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<PlayerStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,27 +56,39 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
             });
         });
 
-        // 3. Fetch all of today's gameplay records for the group.
-        const gameplays = await getGroupGameplays(groupId, new Date());
+        // 3. Fetch gameplay records based on the selected type (daily or overall).
+        const gameplays = type === 'daily'
+            ? await getGroupGameplays(groupId, new Date())
+            : await getAllGroupGameplays(groupId);
         
-        // 4. Filter for only the BEST score for each user for each game to prevent multiple submissions for the same game from inflating scores.
-        const bestScores = new Map<string, Gameplay>(); // Key: 'userId-gameId'
-        gameplays.forEach(gp => {
-            const key = `${gp.userId}-${gp.gameId}`;
-            const existingBest = bestScores.get(key);
-            if (!existingBest || gp.score > existingBest.score) {
-                bestScores.set(key, gp);
-            }
-        });
+        if (type === 'daily') {
+            const bestScoresToday = new Map<string, Gameplay>(); // Key: 'userId-gameId'
+            gameplays.forEach(gp => {
+                const key = `${gp.userId}-${gp.gameId}`;
+                const existingBest = bestScoresToday.get(key);
+                if (!existingBest || gp.score > existingBest.score) {
+                    bestScoresToday.set(key, gp);
+                }
+            });
 
-        // 5. Aggregate the best scores into the player stats.
-        bestScores.forEach(gp => {
-            if (playerStatsMap.has(gp.userId)) {
-                const stats = playerStatsMap.get(gp.userId)!;
-                stats.totalScore += gp.score;
-                stats.gamesPlayed += 1;
-            }
-        });
+            // Aggregate the best scores for today into the player stats.
+            bestScoresToday.forEach(gp => {
+                if (playerStatsMap.has(gp.userId)) {
+                    const stats = playerStatsMap.get(gp.userId)!;
+                    stats.totalScore += gp.score;
+                    stats.gamesPlayed += 1;
+                }
+            });
+        } else { // 'overall' logic
+            // For overall, we just sum up all scores for each player.
+            gameplays.forEach(gp => {
+                if (playerStatsMap.has(gp.userId)) {
+                    const stats = playerStatsMap.get(gp.userId)!;
+                    stats.totalScore += gp.score;
+                    stats.gamesPlayed += 1; // This will now be total games ever played in the group
+                }
+            });
+        }
         
         // 6. Sort the final leaderboard. Higher total score is better.
         const finalLeaderboard = Array.from(playerStatsMap.values()).sort((a, b) => {
@@ -93,7 +106,7 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
     };
 
     fetchAndProcessScores();
-  }, [groupId]);
+  }, [groupId, type]);
 
   if (isLoading) {
     return (
@@ -117,14 +130,14 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[150px] text-center text-muted-foreground p-4 border-2 border-dashed rounded-lg">
         <Trophy className="h-10 w-10 mb-2 text-primary opacity-50" />
-        <h3 className="text-lg font-semibold">No Members in Group</h3>
-        <p className="text-sm">Add some members to start the competition!</p>
+        <h3 className="text-lg font-semibold">No Scores Yet</h3>
+        <p className="text-sm">Play some games to get on the leaderboard!</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto pt-4">
         <Table>
             <TableHeader>
                 <TableRow>

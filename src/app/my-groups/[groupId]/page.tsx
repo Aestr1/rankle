@@ -17,6 +17,7 @@ import { GroupLeaderboard } from '@/components/group-leaderboard';
 import { useToast } from '@/hooks/use-toast';
 import { deleteGroup, leaveGroup } from '@/ai/flows/manage-group-flow';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GroupCompletedGameInfo {
   id: string; // game id
@@ -32,6 +33,7 @@ export default function IndividualGroupPage() {
   const groupId = params.groupId as string;
   const [key, setKey] = useState(0); // Key to force-rerender leaderboard
   const { toast } = useToast();
+  const [leaderboardType, setLeaderboardType] = useState<'overall' | 'daily'>('overall');
 
   const [completedGroupGames, setCompletedGroupGames] = useState<GroupCompletedGameInfo[]>([]);
 
@@ -249,12 +251,18 @@ export default function IndividualGroupPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-headline text-accent">
                     <BarChart3 className="mr-3 h-7 w-7" />
-                    Today's Group Leaderboard
+                    Group Leaderboard
                   </CardTitle>
-                  <CardDescription>Scores and ranks for today's date.</CardDescription>
+                  <CardDescription>Scores and ranks for group members.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <GroupLeaderboard key={key} groupId={group.id} />
+                   <Tabs defaultValue="overall" onValueChange={(value) => setLeaderboardType(value as 'overall' | 'daily')}>
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="overall">Overall</TabsTrigger>
+                        <TabsTrigger value="daily">Today</TabsTrigger>
+                    </TabsList>
+                   </Tabs>
+                   <GroupLeaderboard key={`${key}-${leaderboardType}`} groupId={group.id} type={leaderboardType} />
                 </CardContent>
               </Card>
 
