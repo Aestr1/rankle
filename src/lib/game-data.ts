@@ -1,6 +1,6 @@
 
 import type { Game } from '@/types';
-import { Timer, BookOpenText, Globe, Film, Globe2, Puzzle } from 'lucide-react';
+import { Timer, BookOpenText, Globe, Film, Puzzle } from 'lucide-react';
 
 export const GAMES_DATA: Game[] = [
   {
@@ -64,20 +64,6 @@ https://worldle.teuteuf.fr`
 🧹🏫👨‍🏫🧠🍎
 🟩⬜⬜
 https://emovi.teuteuf.fr`
-  },
-  {
-    id: 'globle',
-    name: 'Globle',
-    description: "Paste your full 'Share' text. The app will find your number of guesses.",
-    link: 'https://globle-game.com/',
-    icon: Globe2,
-    averageScore: 8,
-    examplePreviousScores: [7, 10, 9],
-    scoreInputType: 'text',
-    exampleShareText: `🌎 Jun 29, 2025 🌍
-🔥 1 | Avg. Guesses: 8
-🟧⬜🟧🟨🟥🟧🟧🟩 = 8
-https://globle-game.com`
   },
   {
     id: 'connections',
