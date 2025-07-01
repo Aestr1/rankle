@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -73,8 +72,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader>
             <Link href="/" className="flex items-center gap-2">
-                <Trophy className="h-8 w-8 text-sidebar-primary" />
-                <span className="text-xl font-headline text-sidebar-primary group-data-[collapsible=icon]:hidden">Rankle</span>
+                <Trophy className="h-10 w-10 text-sidebar-primary" />
+                <span className="text-3xl font-headline text-sidebar-primary group-data-[collapsible=icon]:hidden">Rankle</span>
             </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
