@@ -1,4 +1,3 @@
-
 import type { LucideIcon } from 'lucide-react';
 
 export type GameCategory = 'Word & Letters' | 'Geography & Maps' | 'Logic & Puzzle' | 'Trivia & Knowledge' | 'Media & Pop Culture' | 'Creative & Other';
@@ -27,7 +26,7 @@ export interface LibraryGame {
 export interface PlayGroupMember {
   uid: string;
   displayName: string | null;
-  // photoURL?: string | null; // Future enhancement
+  photoURL: string | null;
 }
 
 export interface PlayGroup {
@@ -49,6 +48,7 @@ export interface Gameplay {
     id?: string;
     userId: string;
     userDisplayName: string;
+    userPhotoURL: string | null;
     gameId: string;
     groupId: string | null;
     score: number;

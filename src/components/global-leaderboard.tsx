@@ -7,10 +7,12 @@ import type { Gameplay } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { GAMES_DATA } from '@/lib/game-data';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PlayerStats {
   userId: string;
   displayName: string;
+  photoURL: string | null;
   totalScore: number;
   gamesPlayed: number;
 }
@@ -47,6 +49,7 @@ export function GlobalLeaderboard() {
                 playerStatsMap.set(gp.userId, {
                     userId: gp.userId,
                     displayName: gp.userDisplayName || 'Anonymous',
+                    photoURL: gp.userPhotoURL || null,
                     totalScore: 0,
                     gamesPlayed: 0,
                 });
@@ -110,8 +113,8 @@ export function GlobalLeaderboard() {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[15%] text-center">Rank</TableHead>
-                    <TableHead className="w-[45%]">Player</TableHead>
+                    <TableHead className="w-[10%] text-center">Rank</TableHead>
+                    <TableHead className="w-[50%]">Player</TableHead>
                     <TableHead className="w-[20%] text-center">Games Played</TableHead>
                     <TableHead className="w-[20%] text-center">Total Score</TableHead>
                 </TableRow>
@@ -125,7 +128,15 @@ export function GlobalLeaderboard() {
                             {index === 2 && player.totalScore > 0 && <Trophy className="h-5 w-5 text-amber-600 inline-block mr-1" />}
                             {index + 1}
                         </TableCell>
-                        <TableCell className="font-medium">{player.displayName}</TableCell>
+                        <TableCell className="font-medium">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={player.photoURL || undefined} alt={player.displayName} />
+                                    <AvatarFallback>{player.displayName?.charAt(0) || 'A'}</AvatarFallback>
+                                </Avatar>
+                                <span>{player.displayName}</span>
+                            </div>
+                        </TableCell>
                         <TableCell className="text-center">{player.gamesPlayed} / {totalGames}</TableCell>
                         <TableCell className="text-center">
                             <Badge variant="secondary">{player.totalScore}</Badge>

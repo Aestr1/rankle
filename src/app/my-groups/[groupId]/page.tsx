@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteGroup, leaveGroup } from '@/ai/flows/manage-group-flow';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface GroupCompletedGameInfo {
   id: string; // game id
@@ -119,6 +120,7 @@ export default function IndividualGroupPage() {
           groupId: group.id,
           userId: currentUser.uid,
           userDisplayName: currentUser.displayName,
+          userPhotoURL: currentUser.photoURL,
         });
         if (result.success) {
           toast({ title: "You've Left the Group", description: `You are no longer a member of "${group.name}".` });
@@ -282,12 +284,17 @@ export default function IndividualGroupPage() {
                    </div>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <ul className="space-y-2 text-muted-foreground">
+                  <ul className="space-y-3">
                     {group.members.map(member => (
-                      <li key={member.uid} className="flex items-center">
-                        <span className="inline-block h-2 w-2 bg-primary rounded-full mr-2"></span>
-                        {member.displayName || member.uid}
-                        {member.uid === group.creatorId && <span className="ml-2 text-xs font-semibold text-accent">(Creator)</span>}
+                      <li key={member.uid} className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={member.photoURL || undefined} alt={member.displayName || 'Member'} />
+                            <AvatarFallback>{member.displayName?.charAt(0) || '?'}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                            <span className="font-medium text-foreground">{member.displayName || member.uid}</span>
+                            {member.uid === group.creatorId && <span className="text-xs font-semibold text-accent">Creator</span>}
+                        </div>
                       </li>
                     ))}
                   </ul>

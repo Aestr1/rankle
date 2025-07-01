@@ -53,7 +53,8 @@ export default function JoinGroupPage() {
         joinCode: data.joinCode,
         user: {
             uid: currentUser.uid,
-            displayName: currentUser.displayName
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
         }
       };
 

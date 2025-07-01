@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from '@/components/ui/badge';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface GroupLeaderboardProps {
   groupId: string;
@@ -17,6 +18,7 @@ interface GroupLeaderboardProps {
 interface PlayerStats {
   userId: string;
   displayName: string;
+  photoURL: string | null;
   totalScore: number;
   gamesPlayed: number;
 }
@@ -51,6 +53,7 @@ export function GroupLeaderboard({ groupId, type }: GroupLeaderboardProps) {
             playerStatsMap.set(member.uid, {
                 userId: member.uid,
                 displayName: member.displayName || 'Player',
+                photoURL: member.photoURL || null,
                 totalScore: 0,
                 gamesPlayed: 0,
             });
@@ -156,7 +159,15 @@ export function GroupLeaderboard({ groupId, type }: GroupLeaderboardProps) {
                             {index === 2 && player.totalScore > 0 && <Trophy className="h-5 w-5 text-amber-600 inline-block mr-1" />}
                             {index + 1}
                         </TableCell>
-                        <TableCell className="font-medium">{player.displayName}</TableCell>
+                        <TableCell className="font-medium">
+                           <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={player.photoURL || undefined} alt={player.displayName} />
+                                    <AvatarFallback>{player.displayName?.charAt(0) || 'A'}</AvatarFallback>
+                                </Avatar>
+                                <span>{player.displayName}</span>
+                            </div>
+                        </TableCell>
                         <TableCell className="text-center">{player.gamesPlayed}</TableCell>
                         <TableCell className="text-center">
                             <Badge variant="secondary">{player.totalScore}</Badge>

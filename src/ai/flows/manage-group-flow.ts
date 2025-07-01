@@ -25,6 +25,7 @@ const CreateGroupInputSchema = z.object({
   user: z.object({
     uid: z.string(),
     displayName: z.string().nullable(),
+    photoURL: z.string().nullable(),
   }),
 });
 export type CreateGroupInput = z.infer<typeof CreateGroupInputSchema>;
@@ -42,6 +43,7 @@ const JoinGroupInputSchema = z.object({
     user: z.object({
         uid: z.string(),
         displayName: z.string().nullable(),
+        photoURL: z.string().nullable(),
     }),
 });
 export type JoinGroupInput = z.infer<typeof JoinGroupInputSchema>;
@@ -74,6 +76,7 @@ const LeaveGroupInputSchema = z.object({
   groupId: z.string(),
   userId: z.string(),
   userDisplayName: z.string().nullable(),
+  userPhotoURL: z.string().nullable(),
 });
 export type LeaveGroupInput = z.infer<typeof LeaveGroupInputSchema>;
 
@@ -143,7 +146,7 @@ const createGroupFlow = ai.defineFlow(
       joinCode: lowerCaseJoinCode,
       creatorId: user.uid,
       creatorName: user.displayName,
-      members: [{ uid: user.uid, displayName: user.displayName }],
+      members: [{ uid: user.uid, displayName: user.displayName, photoURL: user.photoURL }],
       memberUids: [user.uid],
       createdAt: FieldValue.serverTimestamp(), // Use admin FieldValue
       isPublic: isPublic,
@@ -195,6 +198,7 @@ const joinGroupFlow = ai.defineFlow(
             members: FieldValue.arrayUnion({
                 uid: user.uid,
                 displayName: user.displayName,
+                photoURL: user.photoURL,
             }),
             memberUids: FieldValue.arrayUnion(user.uid),
             memberCount: FieldValue.increment(1),
@@ -243,7 +247,7 @@ const leaveGroupFlow = ai.defineFlow(
     inputSchema: LeaveGroupInputSchema,
     outputSchema: MutateGroupOutputSchema,
   },
-  async ({ groupId, userId, userDisplayName }) => {
+  async ({ groupId, userId, userDisplayName, userPhotoURL }) => {
     const adminDb = getAdminDb();
     if (!adminDb) {
       return { success: false, error: SERVER_CONFIG_ERROR };
@@ -266,7 +270,7 @@ const leaveGroupFlow = ai.defineFlow(
     }
 
     await groupRef.update({
-      members: FieldValue.arrayRemove({ uid: userId, displayName: userDisplayName }),
+      members: FieldValue.arrayRemove({ uid: userId, displayName: userDisplayName, photoURL: userPhotoURL }),
       memberUids: FieldValue.arrayRemove(userId),
       memberCount: FieldValue.increment(-1),
     });

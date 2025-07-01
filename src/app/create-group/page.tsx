@@ -93,7 +93,8 @@ export default function CreateGroupPage() {
         isPublic: data.isPublic,
         user: {
           uid: currentUser.uid,
-          displayName: currentUser.displayName
+          displayName: currentUser.displayName,
+          photoURL: currentUser.photoURL,
         }
       };
 

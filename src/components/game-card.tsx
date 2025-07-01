@@ -104,6 +104,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
       const gameplayData: Omit<Gameplay, 'id' | 'playedAt'> = {
           userId: currentUser.uid,
           userDisplayName: currentUser.displayName || "Anonymous",
+          userPhotoURL: currentUser.photoURL || null,
           gameId: game.id,
           groupId: groupId,
           score: normalizedScore,
