@@ -2,8 +2,8 @@
 "use client";
 
 import type { User as FirebaseUser } from "firebase/auth";
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, updateProfile } from "firebase/auth";
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
+  updateUserProfile: (updates: Partial<AppUser>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -142,8 +143,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateUserProfile = async (updates: Partial<AppUser>) => {
+    if (!auth.currentUser) {
+      throw new Error("You must be logged in to update your profile.");
+    }
+    
+    try {
+      // 1. Update Firebase Auth Profile
+      // Only update fields that are part of the auth profile
+      const authUpdates: { displayName?: string | null; photoURL?: string | null } = {};
+      if (updates.displayName !== undefined) authUpdates.displayName = updates.displayName;
+      if (updates.photoURL !== undefined) authUpdates.photoURL = updates.photoURL;
+
+      if (Object.keys(authUpdates).length > 0) {
+        await updateProfile(auth.currentUser, authUpdates);
+      }
+      
+      // 2. Update Firestore Document
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(userRef, updates);
+
+      // 3. Update local state
+      setCurrentUser(prevUser => {
+        if (!prevUser) return null;
+        return { ...prevUser, ...updates };
+      });
+
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      throw new Error(error.message || "Failed to update profile.");
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, loading, signInWithGoogle, signOutUser }}>
+    <AuthContext.Provider value={{ currentUser, loading, signInWithGoogle, signOutUser, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
