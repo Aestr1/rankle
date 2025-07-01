@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -55,12 +56,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         if (item.auth && !currentUser) return null;
         return (
             <SidebarMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
-                    <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
-                        <item.icon />
-                        <span>{item.label}</span>
-                    </SidebarMenuButton>
-                </Link>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
             </SidebarMenuItem>
         )
     }).filter(Boolean);
