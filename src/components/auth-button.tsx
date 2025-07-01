@@ -13,47 +13,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut, User as UserIcon, Loader2, Layers, BarChart3, Users, Library } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, Loader2, BarChart3, Users } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function AuthButton() {
   const { currentUser, loading, signInWithGoogle, signOutUser } = useAuth();
+  const { state: sidebarState } = useSidebar();
 
   if (loading) {
     return (
-      <Button variant="outline" size="icon" disabled className="rounded-full">
+      <div className="p-2 flex justify-center">
         <Loader2 className="h-5 w-5 animate-spin" />
-      </Button>
+      </div>
     );
   }
 
   if (currentUser) {
     return (
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2">
-          <Button asChild variant="secondary" className="hidden sm:flex">
-            <Link href="/my-groups">
-              <Layers className="mr-2 h-4 w-4" />
-              My Groups
-            </Link>
-          </Button>
-          <Button asChild variant="secondary" className="hidden sm:flex">
-            <Link href="/games-library">
-              <Library className="mr-2 h-4 w-4" />
-              Games Library
-            </Link>
-          </Button>
-        </div>
+      <div className={sidebarState === 'collapsed' ? 'flex justify-center' : ''}>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
-                <AvatarFallback>
-                  {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : <UserIcon />}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || "User"} />
+                    <AvatarFallback>
+                      {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : <UserIcon />}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center" hidden={sidebarState !== 'collapsed'}>
+              {currentUser.displayName || "User Profile"}
+            </TooltipContent>
+          </Tooltip>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
@@ -64,18 +60,6 @@ export function AuthButton() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="sm:hidden">
-                <Link href="/my-groups">
-                    <Layers className="mr-2 h-4 w-4" />
-                    My Groups
-                </Link>
-            </DropdownMenuItem>
-             <DropdownMenuItem asChild className="sm:hidden">
-              <Link href="/games-library">
-                <Library className="mr-2 h-4 w-4" />
-                Games Library
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/analytics">
                 <BarChart3 className="mr-2 h-4 w-4" />
@@ -99,18 +83,29 @@ export function AuthButton() {
     );
   }
 
+  // Signed-out state
+  if (sidebarState === 'collapsed') {
+    return (
+      <div className="flex justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={signInWithGoogle} variant="ghost" size="icon" className="rounded-full">
+              <LogIn />
+              <span className="sr-only">Sign in</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right" align="center">
+            Sign in
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex items-center gap-2">
-        <Button asChild variant="secondary">
-            <Link href="/games-library">
-                <Library className="mr-2 h-4 w-4" />
-                Games Library
-            </Link>
-        </Button>
-        <Button onClick={signInWithGoogle} variant="outline">
-          <LogIn className="mr-2 h-4 w-4" />
-          Sign in
-        </Button>
-    </div>
+    <Button onClick={signInWithGoogle} variant="outline" className="w-full">
+      <LogIn className="mr-2 h-4 w-4" />
+      Sign in
+    </Button>
   );
 }

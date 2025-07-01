@@ -20,6 +20,7 @@ import { Trophy, Home, Info, HelpCircle, BarChart3, ShieldCheck, Users, Library,
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { useAuth } from "@/contexts/auth-context";
+import { AuthButton } from "./auth-button";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home, auth: false },
@@ -68,7 +69,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <Sidebar>
         <SidebarHeader>
             <Link href="/" className="flex items-center gap-2">
@@ -76,7 +77,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <span className="text-xl font-headline text-sidebar-primary group-data-[collapsible=icon]:hidden">Rankle</span>
             </Link>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="p-2">
             <SidebarMenu>
                 {renderMenuItems(menuItems)}
                 <SidebarSeparator />
@@ -86,7 +87,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-            {/* Could add a theme toggle or user profile link here later */}
+            <AuthButton />
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
