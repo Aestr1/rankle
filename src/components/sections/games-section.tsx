@@ -1,3 +1,4 @@
+
 "use client";
 
 import { GAMES_DATA } from "@/lib/game-data";
@@ -11,9 +12,9 @@ import type { Gameplay, Game } from "@/types";
 import { getGameOfTheDay } from "@/lib/game-of-the-day";
 
 export function GamesSection() {
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [todaysGameplays, setTodaysGameplays] = useState<Gameplay[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [scoresLoading, setScoresLoading] = useState(true);
   const [gameOfTheDay, setGameOfTheDay] = useState<Game | null>(null);
 
   useEffect(() => {
@@ -22,13 +23,17 @@ export function GamesSection() {
   }, []);
 
   useEffect(() => {
+    if (authLoading) {
+      return; // Wait for auth state to resolve
+    }
+
     const fetchTodaysScores = async () => {
       if (!currentUser) {
         setTodaysGameplays([]);
-        setIsLoading(false);
+        setScoresLoading(false);
         return;
       }
-      setIsLoading(true);
+      setScoresLoading(true);
       try {
         // Use a client-side new Date() to be consistent
         const gameplays = await getUserGameplaysForDate(currentUser.uid, new Date());
@@ -37,12 +42,12 @@ export function GamesSection() {
         console.error("Failed to fetch today's gameplays:", error);
         setTodaysGameplays([]);
       } finally {
-        setIsLoading(false);
+        setScoresLoading(false);
       }
     };
 
     fetchTodaysScores();
-  }, [currentUser]);
+  }, [currentUser, authLoading]);
 
   const handleGameComplete = useCallback((gameId: string, score: number) => {
     // This provides instant UI feedback without waiting for a re-fetch.
@@ -61,7 +66,7 @@ export function GamesSection() {
 
   const renderGameCards = () => {
      // Show skeletons if we're waiting for auth or haven't set the game of the day yet.
-     if ((isLoading && currentUser) || !gameOfTheDay) {
+     if (authLoading || scoresLoading || !gameOfTheDay) {
         const skeletonCount = GAMES_DATA.length + 1; // +1 for game of day
         return (
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
