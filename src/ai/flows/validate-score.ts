@@ -18,7 +18,6 @@ const ValidateScoreInputSchema = z.object({
   previousScores: z
     .array(z.number())
     .describe('The player\'s previous scores for the game.'),
-  averageScore: z.number().describe('The average score for the game.'),
 });
 export type ValidateScoreInput = z.infer<typeof ValidateScoreInputSchema>;
 
@@ -26,7 +25,7 @@ const ValidateScoreOutputSchema = z.object({
   isValid: z
     .boolean()
     .describe(
-      'Whether the score is valid or not, based on the player\'s history and the average score.'
+      'Whether the score is valid or not, based on the player\'s history.'
     ),
   reason: z
     .string()
@@ -46,17 +45,16 @@ const prompt = ai.definePrompt({
   output: {schema: ValidateScoreOutputSchema},
   prompt: `You are an expert game score validator.
 
-You will be provided with the game name, player name, submitted score, player's previous scores, and the average score for the game.
+You will be provided with the game name, player name, submitted score, and the player's previous scores.
 
 Based on this information, you will determine if the submitted score is valid or not.
 
-Consider the player's previous scores, the average score for the game, and the game name when making your determination.
+Consider the player's previous scores and the game name when making your determination.
 
 Game Name: {{{gameName}}}
 Player Name: {{{playerName}}}
 Submitted Score: {{{score}}}
 Player's Previous Scores: {{{previousScores}}}
-Average Score: {{{averageScore}}}
 
 Set the isValid output field to true if the score is valid, and false if it is not.
 Provide a detailed reason for your determination in the reason output field. Be very descriptive. 

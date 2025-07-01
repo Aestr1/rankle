@@ -274,16 +274,12 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
             </>
           )}
         </CardContent>
-        <CardFooter className="text-xs text-muted-foreground mt-auto flex items-center justify-between">
-            {game.isFeatured ? (
+        <CardFooter className="text-xs text-muted-foreground mt-auto flex items-center">
+            {game.isFeatured && (
                 <div className="flex items-center text-amber-600 dark:text-amber-400">
                     <Star className="w-4 h-4 mr-1.5" />
                     <span className="font-semibold">Game of the Day</span>
                 </div>
-            ) : (
-                <span>
-                    {game.averageScore ? `Average raw score: ${game.averageScore}` : ''}
-                </span>
             )}
         </CardFooter>
       </Card>

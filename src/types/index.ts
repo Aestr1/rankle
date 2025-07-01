@@ -8,7 +8,6 @@ export interface Game {
   description: string;
   link: string;
   icon: LucideIcon;
-  averageScore?: number;
   examplePreviousScores?: number[];
   scoreInputType: 'number' | 'text';
   exampleShareText?: string;

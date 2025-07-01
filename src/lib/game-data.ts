@@ -9,7 +9,6 @@ export const GAMES_DATA: Game[] = [
     description: 'Paste your full "Share" text with the score grid.',
     link: 'https://timeguessr.com/',
     icon: Timer,
-    averageScore: 18000,
     examplePreviousScores: [15000, 22000, 19000],
     scoreInputType: 'text',
     exampleShareText: `TimeGuessr #759 39,838/50,000
@@ -26,7 +25,6 @@ https://timeguessr.com`
     description: 'Paste your full "Share" text with the emoji grid.',
     link: 'https://www.nytimes.com/games/wordle/index.html',
     icon: BookOpenText,
-    averageScore: 4,
     examplePreviousScores: [3, 4, 5, 4],
     scoreInputType: 'text',
     exampleShareText: `Wordle 1,471 4/6
@@ -42,7 +40,6 @@ https://timeguessr.com`
     description: 'Paste your full "Share" text. The app will find your score (e.g., 4/6) automatically.',
     link: 'https://worldle.teuteuf.fr/',
     icon: Globe,
-    averageScore: 3,
     examplePreviousScores: [2, 3, 4, 1],
     scoreInputType: 'text',
     exampleShareText: `#Worldle #1255 3/6 (100%)
@@ -57,7 +54,6 @@ https://worldle.teuteuf.fr`
     description: 'Paste your full "Share" text with the emoji grid.',
     link: 'https://emovi.teuteuf.fr/',
     icon: Film,
-    averageScore: 3,
     examplePreviousScores: [2, 4, 3],
     scoreInputType: 'text',
     exampleShareText: `#Emovi 🎬 #1079
@@ -71,7 +67,6 @@ https://emovi.teuteuf.fr`
     description: 'Paste your full "Share" text with the emoji grid.',
     link: 'https://www.nytimes.com/games/connections',
     icon: Puzzle,
-    averageScore: 1,
     examplePreviousScores: [0, 1, 2, 0],
     scoreInputType: 'text',
     exampleShareText: `Connections
