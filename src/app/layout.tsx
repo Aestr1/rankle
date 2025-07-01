@@ -1,8 +1,8 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
+import { AppLayout } from '@/components/app-layout';
 
 export const metadata: Metadata = {
   title: 'Rankle',
@@ -24,8 +24,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          {children}
-          <Toaster />
+            <AppLayout>
+              {children}
+            </AppLayout>
+            <Toaster />
         </AuthProvider>
       </body>
     </html>

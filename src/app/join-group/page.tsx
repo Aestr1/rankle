@@ -14,12 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trophy, UserPlus, Loader2 } from "lucide-react";
-import { AuthButton } from "@/components/auth-button";
+import { UserPlus, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
-import { AppFooter } from '@/components/app-footer';
 
 const joinGroupSchema = z.object({
   joinCode: z.string().min(1, { message: "Join code cannot be empty." }),
@@ -101,17 +98,7 @@ export default function JoinGroupPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary">Rankle</h1>
-          </Link>
-          <AuthButton />
-        </div>
-      </header>
-      <main className="flex-grow container mx-auto p-4 md:p-8 flex justify-center items-start">
+    <main className="flex-grow p-4 md:p-8 flex justify-center items-start">
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -157,7 +144,5 @@ export default function JoinGroupPage() {
           </Form>
         </Card>
       </main>
-      <AppFooter />
-    </div>
   );
 }

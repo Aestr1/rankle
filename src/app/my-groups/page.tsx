@@ -1,15 +1,14 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AuthButton } from '@/components/auth-button';
-import { Trophy, ShieldCheck, Info, Loader2 } from 'lucide-react';
+import { ShieldCheck, Info, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import type { PlayGroup } from '@/types';
 import { GroupCard } from '@/components/group-card';
-import { AppFooter } from '@/components/app-footer';
 
 // Firebase imports
 import { db } from '@/lib/firebase';
@@ -50,17 +49,7 @@ export default function MyGroupsPage() {
   }, [currentUser, authLoading]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary">Rankle</h1>
-          </Link>
-          <AuthButton />
-        </div>
-      </header>
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+    <main className="flex-grow p-4 md:p-8">
         <Card className="shadow-xl mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -82,9 +71,6 @@ export default function MyGroupsPage() {
             <CardContent className="p-6 text-center">
               <Info className="h-12 w-12 text-primary mx-auto mb-4" />
               <p className="text-xl text-muted-foreground">Please sign in to see your groups.</p>
-               <Button asChild className="mt-4">
-                <Link href="/">Back to Home</Link>
-              </Button>
             </CardContent>
           </Card>
         ) : userGroups.length === 0 ? (
@@ -110,7 +96,5 @@ export default function MyGroupsPage() {
           </div>
         )}
       </main>
-      <AppFooter />
-    </div>
   );
 }

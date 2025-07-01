@@ -6,7 +6,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from 'next/navigation';
-import Link from "next/link";
 
 import { createPlayGroup, type CreateGroupInput } from '@/ai/flows/manage-group-flow';
 import { useAuth } from "@/contexts/auth-context";
@@ -21,9 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, PlusCircle, Loader2 } from "lucide-react";
-import { AuthButton } from "@/components/auth-button";
-import { AppFooter } from '@/components/app-footer';
+import { PlusCircle, Loader2 } from "lucide-react";
 import { Switch } from '@/components/ui/switch';
 
 const createGroupSchema = z.object({
@@ -131,17 +128,7 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary">Rankle</h1>
-          </Link>
-          <AuthButton />
-        </div>
-      </header>
-      <main className="flex-grow container mx-auto p-4 md:p-8 flex justify-center items-start">
+    <main className="flex-grow p-4 md:p-8 flex justify-center items-start">
         <Card className="w-full max-w-3xl shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -306,8 +293,6 @@ export default function CreateGroupPage() {
             </form>
           </Form>
         </Card>
-      </main>
-      <AppFooter />
-    </div>
+    </main>
   );
 }

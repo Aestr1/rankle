@@ -5,7 +5,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import type { AppUser } from '@/types';
 import { getFriends, addFriendByEmail } from '@/ai/flows/friends-flow';
@@ -15,9 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Users, UserPlus, Loader2, Info, ArrowLeft } from "lucide-react";
-import { AuthButton } from "@/components/auth-button";
-import { AppFooter } from '@/components/app-footer';
+import { Users, UserPlus, Loader2, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const addFriendSchema = z.object({
@@ -99,23 +96,6 @@ export default function FriendsPage() {
       });
     }
   };
-
-  const pageHeader = (
-     <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-             <Button variant="ghost" size="icon" asChild className="mr-2">
-                <Link href="/" aria-label="Back to Home">
-                    <ArrowLeft className="h-6 w-6 text-primary" />
-                </Link>
-            </Button>
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary">Rankle</h1>
-          </div>
-          <AuthButton />
-        </div>
-      </header>
-  );
 
   const renderContent = () => {
     if (authLoading || isLoading) {
@@ -200,9 +180,7 @@ export default function FriendsPage() {
   }
 
   return (
-     <div className="flex flex-col min-h-screen bg-background">
-      {pageHeader}
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+     <main className="flex-grow p-4 md:p-8">
          <Card className="shadow-xl mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -216,7 +194,5 @@ export default function FriendsPage() {
         </Card>
         {renderContent()}
       </main>
-      <AppFooter />
-    </div>
   );
 }

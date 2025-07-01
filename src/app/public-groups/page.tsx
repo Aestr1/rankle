@@ -1,24 +1,20 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AuthButton } from '@/components/auth-button';
-import { Trophy, Globe, Search, Loader2, Info } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { Globe, Search, Loader2, Info } from 'lucide-react';
 import type { PlayGroup } from '@/types';
 import { GroupCard } from '@/components/group-card';
-import { AppFooter } from '@/components/app-footer';
 import { getPublicGroups } from '@/ai/flows/manage-group-flow';
 import { useDebounce } from '@/hooks/use-debounce';
 
 export default function PublicGroupsPage() {
   const [allGroups, setAllGroups] = useState<PlayGroup[]>([]);
-  const { currentUser, loading: authLoading } = useAuth();
   const [groupsLoading, setGroupsLoading] = useState(true);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,17 +72,7 @@ export default function PublicGroupsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary">Rankle</h1>
-          </Link>
-          <AuthButton />
-        </div>
-      </header>
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+    <main className="flex-grow p-4 md:p-8">
         <Card className="shadow-xl mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -123,9 +109,6 @@ export default function PublicGroupsPage() {
         </Card>
         
         {renderContent()}
-
       </main>
-      <AppFooter />
-    </div>
   );
 }

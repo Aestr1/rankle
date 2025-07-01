@@ -2,13 +2,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { AuthButton } from '@/components/auth-button';
-import { Trophy, ArrowLeft, Gamepad2, Users, BarChart3, Info, Loader2, Copy, Trash2, LogOut } from 'lucide-react';
+import { Gamepad2, Users, BarChart3, Info, Loader2, Copy, Trash2, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import type { PlayGroup, Game } from '@/types';
 import { GAMES_DATA } from '@/lib/game-data';
@@ -17,7 +15,6 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from "firebase/firestore";
 import { GroupLeaderboard } from '@/components/group-leaderboard';
 import { useToast } from '@/hooks/use-toast';
-import { AppFooter } from '@/components/app-footer';
 import { deleteGroup, leaveGroup } from '@/ai/flows/manage-group-flow';
 import { cn } from '@/lib/utils';
 
@@ -137,26 +134,6 @@ export default function IndividualGroupPage() {
     }
   };
 
-
-  const pageHeader = (title: string | React.ReactNode = group?.name || 'Group') => (
-    <header className="py-4 px-4 md:px-8 shadow-md bg-card sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-             <Button variant="ghost" size="icon" asChild className="mr-2">
-                <Link href="/my-groups" aria-label="Back to My Groups">
-                    <ArrowLeft className="h-6 w-6 text-primary" />
-                </Link>
-            </Button>
-            <Trophy className="h-10 w-10 text-primary mr-3" />
-            <h1 className="text-4xl font-headline text-primary truncate max-w-xs md:max-w-md lg:max-w-lg" title={typeof title === 'string' ? title : undefined}>
-                {title}
-            </h1>
-          </div>
-          <AuthButton />
-        </div>
-      </header>
-  );
-
   if (authLoading || isLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-background items-center justify-center">
@@ -168,54 +145,41 @@ export default function IndividualGroupPage() {
 
   if (!currentUser) {
      return (
-        <div className="flex flex-col min-h-screen bg-background">
-            {pageHeader("View Group")}
-            <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center justify-center">
-                <Card className="w-full max-w-lg text-center shadow-xl">
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-center text-3xl font-headline text-primary">
-                            <Info className="mr-3 h-8 w-8" />
-                            Sign In Required
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-lg text-muted-foreground mb-6">
-                            Please sign in to view your group details.
-                        </p>
-                    </CardContent>
-                </Card>
-            </main>
-            <AppFooter />
-        </div>
+        <main className="flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
+            <Card className="w-full max-w-lg text-center shadow-xl">
+                <CardHeader>
+                    <CardTitle className="flex items-center justify-center text-3xl font-headline text-primary">
+                        <Info className="mr-3 h-8 w-8" />
+                        Sign In Required
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-lg text-muted-foreground mb-6">
+                        Please sign in to view your group details.
+                    </p>
+                </CardContent>
+            </Card>
+        </main>
      );
   }
 
   if (!group) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
-         {pageHeader("Group Not Found")}
-        <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center justify-center">
-          <Card className="w-full max-w-lg text-center shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center text-3xl font-headline text-destructive">
-                <Info className="mr-3 h-8 w-8" />
-                Group Not Found
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg text-muted-foreground mb-6">
-                The group you are looking for does not exist or you may not have permission to view it.
-              </p>
-              <Button asChild variant="outline">
-                <Link href="/my-groups">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Go Back to My Groups
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-         <AppFooter />
-      </div>
+      <main className="flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
+        <Card className="w-full max-w-lg text-center shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center text-3xl font-headline text-destructive">
+              <Info className="mr-3 h-8 w-8" />
+              Group Not Found
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg text-muted-foreground mb-6">
+              The group you are looking for does not exist or you may not have permission to view it.
+            </p>
+          </CardContent>
+        </Card>
+      </main>
     );
   }
 
@@ -248,16 +212,14 @@ export default function IndividualGroupPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="flex flex-col min-h-screen bg-background">
-        {pageHeader()}
-        <main className="flex-grow container mx-auto p-4 md:p-8 space-y-8">
+      <main className="flex-grow p-4 md:p-8 space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center text-2xl font-headline text-accent">
                 <Gamepad2 className="mr-3 h-7 w-7" />
-                Today's Games
+                Today's Games for {group.name}
               </CardTitle>
-              <CardDescription>Play the selected games for the "{group.name}" group.</CardDescription>
+              <CardDescription>Play the selected games for this group.</CardDescription>
             </CardHeader>
             <CardContent>
               {gamesToDisplay.length > 0 ? (
@@ -337,8 +299,6 @@ export default function IndividualGroupPage() {
           </div>
 
         </main>
-        <AppFooter />
-      </div>
     </>
   );
 }
