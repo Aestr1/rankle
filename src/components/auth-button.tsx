@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut, User as UserIcon, Loader2, BarChart3, Users } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, Loader2, BarChart3, Users, Settings } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
@@ -108,6 +108,12 @@ export function AuthButton() {
               <Link href="/friends">
                 <Users className="mr-2 h-4 w-4" />
                 Friends
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

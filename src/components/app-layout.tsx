@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -15,12 +16,11 @@ import {
   SidebarMenuButton,
   SidebarSeparator
 } from "@/components/ui/sidebar";
-import { Trophy, Home, Info, HelpCircle, BarChart3, ShieldCheck, Users, Library, Globe, PlusCircle, UserPlus } from "lucide-react";
+import { Trophy, Home, Info, HelpCircle, BarChart3, ShieldCheck, Users, Library, Globe, PlusCircle, UserPlus, Settings } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { useAuth } from "@/contexts/auth-context";
 import { AuthButton } from "./auth-button";
-import { ThemeSwitcher } from "./theme-switcher";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home, auth: false },
@@ -41,6 +41,10 @@ const socialItems = [
     { href: "/games-library", label: "Games Library", icon: Library, auth: false },
 ];
 
+const settingsItems = [
+    { href: "/settings", label: "Settings", icon: Settings, auth: true },
+]
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { currentUser } = useAuth();
@@ -49,10 +53,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (href === "/") {
         return pathname === "/";
     }
+    // For settings, we want an exact match.
+    if (href === "/settings") {
+      return pathname === href;
+    }
     return pathname.startsWith(href);
   };
 
-  const renderMenuItems = (items: typeof menuItems) => {
+  const renderMenuItems = (items: { href: string; label: string; icon: typeof Home; auth: boolean }[]) => {
     return items.map((item) => {
         if (item.auth && !currentUser) return null;
         return (
@@ -84,11 +92,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 {renderMenuItems(groupItems)}
                 <SidebarSeparator />
                 {renderMenuItems(socialItems)}
+                <SidebarSeparator />
+                {renderMenuItems(settingsItems)}
             </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-2">
-            <div className="flex items-center justify-center gap-2 group-data-[collapsible=expanded]:flex-row-reverse group-data-[collapsible=expanded]:justify-between">
-              <ThemeSwitcher />
+            <div className="flex items-center justify-center group-data-[collapsible=expanded]:justify-end">
               <AuthButton />
             </div>
         </SidebarFooter>
