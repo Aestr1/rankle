@@ -20,6 +20,7 @@ import { AppHeader } from "@/components/app-header";
 import { AppFooter } from "@/components/app-footer";
 import { useAuth } from "@/contexts/auth-context";
 import { AuthButton } from "./auth-button";
+import { ThemeSwitcher } from "./theme-switcher";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home, auth: false },
@@ -85,8 +86,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 {renderMenuItems(socialItems)}
             </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-            <AuthButton />
+        <SidebarFooter className="p-2">
+            <div className="flex items-center justify-center gap-2 group-data-[collapsible=expanded]:flex-row-reverse group-data-[collapsible=expanded]:justify-between">
+              <ThemeSwitcher />
+              <AuthButton />
+            </div>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
