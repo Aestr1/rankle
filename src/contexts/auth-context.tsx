@@ -102,12 +102,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: (
             <div className="text-sm">
               <p>This app's domain is not authorized for Firebase Sign-In.</p>
-              <p className="mt-2 font-semibold">Please check the following:</p>
+              <p className="mt-2 font-semibold">Please add your domains to the Firebase Console:</p>
               <ul className="list-disc pl-5 mt-1 space-y-1">
                 <li>Go to Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains.</li>
-                <li>Ensure <strong>localhost</strong> is added to the list.</li>
-                <li>Ensure the keys in your <strong>.env</strong> file are correct.</li>
-                <li className="font-bold">You MUST restart the dev server after changing the .env file.</li>
+                <li>Add <strong>localhost</strong> for local development.</li>
+                <li>Add <strong>rankle.today</strong> for your live site.</li>
+                <li className="font-bold">Remember to restart the dev server after changing your .env file.</li>
               </ul>
             </div>
           ),
