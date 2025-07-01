@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             photoURL: firebaseUser.photoURL,
             createdAt: serverTimestamp(),
             friendUids: [],
+            totalScore: 0,
           };
           await setDoc(userRef, newUser);
           setCurrentUser(newUser);
@@ -64,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         photoURL: firebaseUser.photoURL,
         createdAt: serverTimestamp(),
         friendUids: [],
+        totalScore: 0,
       };
       try {
         await setDoc(userRef, newUser);

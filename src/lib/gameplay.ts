@@ -1,21 +1,34 @@
 
 import { db } from "@/lib/firebase";
 import type { Gameplay } from "@/types";
-import { collection, addDoc, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, Timestamp, orderBy, runTransaction, doc, increment } from "firebase/firestore";
 
 /**
- * Adds a new gameplay record to Firestore.
+ * Adds a new gameplay record and updates the user's total score in a single transaction.
  */
 export async function addGameplay(gameplayData: Omit<Gameplay, 'id' | 'playedAt'>): Promise<string> {
+  const gameplayRef = doc(collection(db, "gameplays"));
+  const userRef = doc(db, "users", gameplayData.userId);
+
   try {
-    const docRef = await addDoc(collection(db, "gameplays"), {
-      ...gameplayData,
-      playedAt: Timestamp.now(),
+    await runTransaction(db, async (transaction) => {
+      // 1. Add the new gameplay document
+      transaction.set(gameplayRef, {
+        ...gameplayData,
+        playedAt: Timestamp.now(),
+      });
+      
+      // 2. Atomically increment the user's total score
+      // We don't need to check for featured games here, because they call onComplete with score 0
+      // and this function is only called for scores > 0 from the GameCard component.
+      transaction.update(userRef, {
+          totalScore: increment(gameplayData.score)
+      });
     });
-    return docRef.id;
+    return gameplayRef.id;
   } catch (error) {
-    console.error("Error adding gameplay document: ", error);
-    throw new Error("Could not save score.");
+    console.error("Error adding gameplay document transactionally: ", error);
+    throw new Error("Could not save score and update rank.");
   }
 }
 

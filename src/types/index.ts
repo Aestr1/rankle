@@ -62,4 +62,5 @@ export interface AppUser {
   photoURL: string | null;
   createdAt?: any; 
   friendUids?: string[]; // Array of user UIDs
+  totalScore?: number;
 }

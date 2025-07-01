@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -16,6 +17,9 @@ import {
 import { LogIn, LogOut, User as UserIcon, Loader2, BarChart3, Users } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
+import { getRankForScore } from "@/lib/rank-data";
+
 
 export function AuthButton() {
   const { currentUser, loading, signInWithGoogle, signOutUser } = useAuth();
@@ -30,6 +34,10 @@ export function AuthButton() {
   }
 
   if (currentUser) {
+    const rankInfo = currentUser.totalScore !== undefined && currentUser.totalScore !== null
+      ? getRankForScore(currentUser.totalScore)
+      : null;
+
     return (
       <div className={sidebarState === 'collapsed' ? 'flex justify-center' : ''}>
         <DropdownMenu>
@@ -59,6 +67,36 @@ export function AuthButton() {
                 </p>
               </div>
             </DropdownMenuLabel>
+            
+            {rankInfo && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex items-start gap-3 text-xs p-1">
+                    <rankInfo.currentRank.icon className="h-5 w-5 mt-0.5 text-accent" />
+                    <div className="flex flex-col w-full">
+                        <div className="flex justify-between font-medium text-sm">
+                            <span>{rankInfo.currentRank.name}</span>
+                            <span>{currentUser.totalScore} pts</span>
+                        </div>
+                        {!rankInfo.isMaxRank && rankInfo.nextRank ? (
+                            <>
+                                <Progress value={rankInfo.progress} className="h-1.5 my-1" />
+                                <div className="flex justify-between text-muted-foreground text-[11px]">
+                                    <span>{rankInfo.currentRank.threshold}</span>
+                                    <span>Next: {rankInfo.nextRank.name}</span>
+                                    <span>{rankInfo.nextRank.threshold}</span>
+                                </div>
+                            </>
+                        ) : (
+                           <p className="text-xs text-muted-foreground mt-1">Max Rank Achieved!</p>
+                        )}
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+              </>
+            )}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/analytics">
