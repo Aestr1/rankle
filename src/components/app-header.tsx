@@ -83,7 +83,7 @@ export function AppHeader() {
         <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center space-x-2">
                 <Trophy className="h-8 w-8 text-primary" />
-                <span className="hidden font-bold sm:inline-block text-2xl font-headline">Daily Duel</span>
+                <span className="hidden font-bold sm:inline-block text-2xl font-headline">Rankle</span>
             </Link>
             <nav className="hidden md:flex items-center space-x-6">
               {renderNavLinks()}
@@ -103,7 +103,7 @@ export function AppHeader() {
                     <SheetClose asChild>
                       <Link href="/" className="mb-8 flex items-center px-4">
                           <Trophy className="mr-2 h-7 w-7 text-primary" />
-                          <span className="font-bold text-xl font-headline">Daily Duel</span>
+                          <span className="font-bold text-xl font-headline">Rankle</span>
                       </Link>
                     </SheetClose>
                     <div className="flex flex-col space-y-2 px-2">

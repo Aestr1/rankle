@@ -6,7 +6,7 @@ import { AppLayout } from '@/components/app-layout';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Daily Duel',
+  title: 'Rankle',
   description: 'A hub for playing daily games with friends.',
 };
 

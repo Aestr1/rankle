@@ -24,7 +24,7 @@ export function AppFooter() {
             <footer className="text-center p-6 text-muted-foreground border-t">
                 <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
                     <p>
-                        © {currentYear ? currentYear : '...'} Daily Duel. Sharpen your mind, one game at a time.
+                        © {currentYear ? currentYear : '...'} Rankle. Sharpen your mind, one game at a time.
                     </p>
                     <div className="flex flex-wrap justify-center gap-2">
                         <Button onClick={() => openDialog('suggestion')} variant="outline" size="sm">

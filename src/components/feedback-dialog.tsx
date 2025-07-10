@@ -75,7 +75,7 @@ export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDial
         if (result.success) {
             toast({
                 title: "Feedback Sent!",
-                description: "Thank you for your help in making Daily Duel better.",
+                description: "Thank you for your help in making Rankle better.",
             });
             onOpenChange(false);
         } else {
@@ -100,7 +100,7 @@ export function FeedbackDialog({ open, onOpenChange, defaultType }: FeedbackDial
         <DialogHeader>
           <DialogTitle>Submit Feedback</DialogTitle>
           <DialogDescription>
-            We appreciate your help in making Daily Duel better. All feedback is anonymous.
+            We appreciate your help in making Rankle better. All feedback is anonymous.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

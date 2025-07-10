@@ -47,7 +47,7 @@ export default function Home() {
                 <DialogHeader>
                     <DialogTitle className="flex items-center text-2xl font-headline text-primary">
                         <Info className="mr-3 h-7 w-7 text-accent" />
-                        Welcome to Daily Duel!
+                        Welcome to Rankle!
                     </DialogTitle>
                      <DialogDescription className="text-left pt-2">
                         This is your personal hub to track your scores and compete with friends on popular daily puzzle games.
@@ -60,7 +60,7 @@ export default function Home() {
                     <ul className="list-disc pl-5 space-y-1.5">
                         <li>Click a "Play Game" button to open a daily puzzle game on its official website.</li>
                         <li>After you finish the game, look for a "Share" button to copy your results to the clipboard.</li>
-                        <li>Return to Daily Duel and use the "Paste" button on the game card to enter your score automatically.</li>
+                        <li>Return to Rankle and use the "Paste" button on the game card to enter your score automatically.</li>
                         <li>Click "Submit Score" to save your progress to your personal analytics and the leaderboards.</li>
                     </ul>
                     <p>
