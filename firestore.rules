@@ -3,62 +3,39 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check for group membership.
-    // It's important that this function checks if auth is not null.
-    function isGroupMember(groupId) {
-      return request.auth != null &&
-             get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([request.auth.uid]);
-    }
-
-    // USERS collection
-    // Users can see basic info of other users (for friends lists),
-    // but can only read/write their own full document.
+  
+    // Users can read their own data and update their own profiles.
     match /users/{userId} {
-      allow get: if request.auth != null;
-      allow list: if request.auth != null && request.auth.uid == userId; // Only list own user doc
-      allow create, update: if request.auth.uid == userId;
-      allow delete: if false; // Deletions should be handled carefully, maybe via server function
+      allow read, update: if request.auth.uid == userId;
+      allow create: if request.auth.uid != null;
     }
     
-    // FEEDBACK collection
-    // All writes are handled by a secure server flow. No client access.
-    match /feedback/{feedbackId} {
-        allow read, write: if false;
-    }
-
-    // GROUPS collection
-    // Client-side, users can only read groups they are a member of.
-    // All mutations (create, join, leave, delete) are handled by secure server flows.
+    // Rules for the 'groups' collection
     match /groups/{groupId} {
-      // A user can get a group doc if they are a member.
-      // A user can list groups if the query is for groups they are a member of.
-      allow read: if isGroupMember(groupId);
+      // Anyone authenticated can create a group.
+      allow create: if request.auth.uid != null;
+      
+      // Users can read a group's details if they are a member.
+      allow read: if request.auth.uid in resource.data.memberUids;
 
-      // All mutations are done via server flows which bypass these rules.
-      allow write: if false;
+      // Users can update (join) a group if they are authenticated.
+      // More specific logic (e.g., creator can't leave) is handled in server-side flows.
+      allow update: if request.auth.uid != null;
+      
+      // Only the creator can delete the group.
+      allow delete: if request.auth.uid == resource.data.creatorId;
     }
-
-    // GAMEPLAYS collection
-    // Contains scores for both global and group challenges.
+    
+    // Gameplay can be created by any authenticated user.
     match /gameplays/{gameplayId} {
-      // Who can read scores?
-      // 1. Anyone can read global scores (for the main leaderboard).
-      // 2. Group members can read scores for their group's games.
-      // 3. A user can always read their own scores.
-      allow read: if (resource.data.groupId == null) ||
-                   (resource.data.groupId != null && isGroupMember(resource.data.groupId)) ||
-                   (request.auth != null && request.auth.uid == resource.data.userId);
-
-      // Who can create scores?
-      // An authenticated user can only create a score for themself.
-      // We also check that the display name in the record matches the user's token.
-      allow create: if request.auth != null &&
-                     request.auth.uid == request.resource.data.userId &&
-                     request.resource.data.userDisplayName == request.auth.token.name;
-
-      // Scores are immutable from the client.
-      allow update, delete: if false;
+        allow create: if request.auth.uid != null;
+        // Reading specific gameplay documents can be restricted further if needed.
+        allow read: if request.auth.uid == resource.data.userId;
+    }
+    
+    // Anyone can submit feedback.
+    match /feedback/{feedbackId} {
+        allow create: if true;
     }
   }
 }
