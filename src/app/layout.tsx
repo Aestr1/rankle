@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     description: 'A hub for playing daily games with friends.',
     images: [
       {
-        url: 'https://placehold.co/1200x630.png',
+        url: new URL('https://placehold.co/1200x630.png'),
         width: 1200,
         height: 630,
         alt: 'Rankle - Daily Puzzle Games Hub',
