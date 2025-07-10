@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview AI-adjacent flows for managing play groups.
@@ -13,7 +14,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getAdminDb } from '@/lib/firebase-admin'; // Use the Admin SDK
-import { FieldValue, collection, query, where, getDocs } from 'firebase-admin/firestore'; // Use the Admin SDK's FieldValue
+import { FieldValue } from 'firebase-admin/firestore'; // Use the Admin SDK's FieldValue
 import type { PlayGroup } from '@/types';
 
 // Input schema for creating a group
@@ -130,7 +131,6 @@ const createGroupFlow = ai.defineFlow(
     const { groupName, selectedGames, joinCode, isPublic, user } = input;
     const lowerCaseJoinCode = joinCode.toLowerCase();
 
-    // Use adminDb to bypass client-side security rules for this check
     const groupsRef = adminDb.collection("groups");
     const q = groupsRef.where("joinCode", "==", lowerCaseJoinCode);
     const querySnapshot = await q.get();
@@ -139,7 +139,6 @@ const createGroupFlow = ai.defineFlow(
       return { error: "This join code is already in use. Please choose another." };
     }
 
-    // 2. Create group document
     const newGroup = {
       name: groupName,
       gameIds: selectedGames,
@@ -148,7 +147,7 @@ const createGroupFlow = ai.defineFlow(
       creatorName: user.displayName,
       members: [{ uid: user.uid, displayName: user.displayName, photoURL: user.photoURL }],
       memberUids: [user.uid],
-      createdAt: FieldValue.serverTimestamp(), // Use admin FieldValue
+      createdAt: FieldValue.serverTimestamp(),
       isPublic: isPublic,
       memberCount: 1,
     };
@@ -174,7 +173,6 @@ const joinGroupFlow = ai.defineFlow(
         const { joinCode, user } = input;
         const lowerCaseJoinCode = joinCode.toLowerCase();
         
-        // Use adminDb to bypass client-side security rules for this check
         const groupsRef = adminDb.collection("groups");
         const q = groupsRef.where("joinCode", "==", lowerCaseJoinCode);
         const querySnapshot = await q.get();
@@ -291,22 +289,22 @@ const getPublicGroupsFlow = ai.defineFlow(
         const adminDb = getAdminDb();
         if (!adminDb) return [];
 
-        const groupsRef = collection(adminDb, 'groups');
-        const q = query(groupsRef, where('isPublic', '==', true));
-        const querySnapshot = await getDocs(q);
+        let q = adminDb.collection('groups').where('isPublic', '==', true);
+        
+        // Firestore doesn't support case-insensitive search or searching parts of a string easily.
+        // We will fetch all public groups and filter/sort in memory. This is okay for a small number of groups.
+        const querySnapshot = await q.get();
         
         let groups: PlayGroup[] = [];
         querySnapshot.forEach((doc) => {
             groups.push({ id: doc.id, ...doc.data() } as PlayGroup);
         });
 
-        // Filter in memory since Firestore has query limitations
         if (searchTerm && searchTerm.trim() !== '') {
             const lowercasedTerm = searchTerm.toLowerCase();
             groups = groups.filter(group => group.name.toLowerCase().includes(lowercasedTerm));
         }
 
-        // Sort in memory
         if (sortBy === 'newest') {
             groups.sort((a, b) => {
                 const dateA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
