@@ -99,7 +99,7 @@ export default function JoinGroupPage() {
   };
 
   return (
-    <main className="flex-grow p-4 md:p-8 flex justify-center items-start">
+    <main className="container flex-grow p-4 md:p-8 flex justify-center items-start">
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">

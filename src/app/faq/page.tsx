@@ -5,11 +5,11 @@ import { HelpCircle } from "lucide-react";
 const faqs = [
     {
         question: "How does score parsing work?",
-        answer: "When you paste your 'Share' text from a game, Rankle uses specific patterns to find your score. For Wordle, it looks for 'X/6'. For TimeGuessr, it finds your point total. If the format is unexpected, it might fail. Always paste the full, unaltered share text for best results."
+        answer: "When you paste your 'Share' text from a game, Daily Duel uses specific patterns to find your score. For Wordle, it looks for 'X/6'. For TimeGuessr, it finds your point total. If the format is unexpected, it might fail. Always paste the full, unaltered share text for best results."
     },
     {
         question: "What is a 'normalized' score?",
-        answer: "Different games have different scoring systems (e.g., fewer guesses is better in Wordle, but more points is better in TimeGuessr). To compare scores fairly on leaderboards, Rankle converts every raw score into a standardized 0-100 scale, where 100 is always the best possible outcome."
+        answer: "Different games have different scoring systems (e.g., fewer guesses is better in Wordle, but more points is better in TimeGuessr). To compare scores fairly on leaderboards, Daily Duel converts every raw score into a standardized 0-100 scale, where 100 is always the best possible outcome."
     },
     {
         question: "Can I add a game to the library?",
@@ -27,7 +27,7 @@ const faqs = [
 
 export default function FaqPage() {
   return (
-    <main className="flex-grow p-4 md:p-8">
+    <main className="container flex-grow p-4 md:p-8">
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -35,7 +35,7 @@ export default function FaqPage() {
             Frequently Asked Questions
           </CardTitle>
           <CardDescription>
-            Find answers to common questions about Rankle.
+            Find answers to common questions about Daily Duel.
           </CardDescription>
         </CardHeader>
         <CardContent>

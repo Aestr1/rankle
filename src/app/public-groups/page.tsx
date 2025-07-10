@@ -72,7 +72,7 @@ export default function PublicGroupsPage() {
   };
 
   return (
-    <main className="flex-grow p-4 md:p-8">
+    <main className="container flex-grow p-4 md:p-8">
         <Card className="shadow-xl mb-8">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-headline text-primary">

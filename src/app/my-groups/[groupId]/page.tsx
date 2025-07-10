@@ -149,7 +149,7 @@ export default function IndividualGroupPage() {
 
   if (!currentUser) {
      return (
-        <main className="flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
+        <main className="container flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
             <Card className="w-full max-w-lg text-center shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center justify-center text-3xl font-headline text-primary">
@@ -169,7 +169,7 @@ export default function IndividualGroupPage() {
 
   if (!group) {
     return (
-      <main className="flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
+      <main className="container flex-grow p-4 md:p-8 flex flex-col items-center justify-center">
         <Card className="w-full max-w-lg text-center shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center justify-center text-3xl font-headline text-destructive">
@@ -216,7 +216,7 @@ export default function IndividualGroupPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <main className="flex-grow p-4 md:p-8 space-y-8">
+      <main className="container flex-grow p-4 md:p-8 space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center text-2xl font-headline text-accent">

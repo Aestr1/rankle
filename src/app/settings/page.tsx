@@ -64,7 +64,7 @@ export default function SettingsPage() {
 
 
   return (
-    <main className="flex-grow p-4 md:p-8">
+    <main className="container flex-grow p-4 md:p-8">
       <Card className="max-w-4xl mx-auto shadow-xl">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-headline text-primary">
@@ -139,9 +139,9 @@ export default function SettingsPage() {
           <div>
             <h3 className="text-xl font-semibold mb-4 text-accent">Appearance</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Choose how Rankle looks and feels. Your preference is saved automatically.
+              Choose how Daily Duel looks and feels. Your preference is saved automatically.
             </p>
-            <RadioGroup value={theme} onValueChange={setTheme} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <RadioGroup value={theme} onValueChange={setTheme} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Label className="flex items-center space-x-3 rounded-md border p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-muted/50">
                 <RadioGroupItem value="light" id="light" />
                 <div className="flex items-center gap-2 font-medium">

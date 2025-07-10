@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
     };
 
     return (
-        <main className="flex-grow p-4 md:p-8 space-y-8">
+        <main className="container flex-grow p-4 md:p-8 space-y-8">
             <Card className="shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center text-3xl font-headline text-primary">
