@@ -144,8 +144,8 @@ const createGroupFlow = ai.defineFlow(
       gameIds: selectedGames,
       joinCode: lowerCaseJoinCode,
       creatorId: user.uid,
-      creatorName: user.displayName,
-      members: [{ uid: user.uid, displayName: user.displayName, photoURL: user.photoURL }],
+      creatorName: user.displayName || "Anonymous", // Handle null displayName
+      members: [{ uid: user.uid, displayName: user.displayName || "Anonymous", photoURL: user.photoURL }],
       memberUids: [user.uid],
       createdAt: FieldValue.serverTimestamp(),
       isPublic: isPublic,
@@ -195,7 +195,7 @@ const joinGroupFlow = ai.defineFlow(
         await groupDoc.ref.update({
             members: FieldValue.arrayUnion({
                 uid: user.uid,
-                displayName: user.displayName,
+                displayName: user.displayName || "Anonymous",
                 photoURL: user.photoURL,
             }),
             memberUids: FieldValue.arrayUnion(user.uid),
@@ -268,7 +268,7 @@ const leaveGroupFlow = ai.defineFlow(
     }
 
     await groupRef.update({
-      members: FieldValue.arrayRemove({ uid: userId, displayName: userDisplayName, photoURL: userPhotoURL }),
+      members: FieldValue.arrayRemove({ uid: userId, displayName: userDisplayName || "Anonymous", photoURL: userPhotoURL }),
       memberUids: FieldValue.arrayRemove(userId),
       memberCount: FieldValue.increment(-1),
     });
