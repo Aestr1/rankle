@@ -64,6 +64,26 @@ export function normalizeScore(gameId: string, rawScore: number): number {
             normalizedScore = Math.max(0, 100 - (rawScore - 1) * 4);
             break;
 
+        case 'strands': {
+            // rawScore is number of hints. Lower is better. 0 is perfect.
+            // 100 is a special value for failure.
+            if (rawScore === 100) return 0; // Failure case
+            if (rawScore === 0) return 100; // Perfect score
+            // Give diminishing returns for each hint used.
+            normalizedScore = 100 - (rawScore * 15);
+            break;
+        }
+
+        case 'mini-crossword': {
+            // rawScore is time in seconds. Lower is better.
+            // Let's set a "par" time of 60 seconds for a good score, and a max of 3 minutes.
+            const maxTime = 180; // 3 minutes
+            if (rawScore > maxTime) return 0;
+            if (rawScore <= 20) return 100; // Excellent time
+            normalizedScore = 100 - ((rawScore - 20) / (maxTime - 20)) * 100;
+            break;
+        }
+
         default:
             // For any games not explicitly handled, we can't normalize.
             // Throwing an error is the safest way to highlight this.

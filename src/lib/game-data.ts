@@ -1,6 +1,6 @@
 
 import type { Game } from '@/types';
-import { Timer, BookOpenText, Globe, Film, Puzzle } from 'lucide-react';
+import { Timer, BookOpenText, Globe, Film, Puzzle, Waves, FileText } from 'lucide-react';
 
 export const GAMES_DATA: Game[] = [
   {
@@ -75,5 +75,29 @@ Puzzle #749
 🟪🟪🟪🟪
 🟦🟦🟦🟦
 🟨🟨🟨🟨`
+  },
+  {
+    id: 'strands',
+    name: 'Strands',
+    description: 'Paste your full "Share" text. Score is based on hints used.',
+    link: 'https://www.nytimes.com/games/strands',
+    icon: Waves,
+    examplePreviousScores: [0, 1, 0, 2],
+    scoreInputType: 'text',
+    exampleShareText: `Strands #89
+“On the bright side”
+💡🔵🔵🔵🔵
+🔵🟡🔵🔵
+🔵🔵`
+  },
+  {
+    id: 'mini-crossword',
+    name: 'The Mini',
+    description: 'Paste your full "Share" text. Score is based on time.',
+    link: 'https://www.nytimes.com/crosswords/game/mini',
+    icon: FileText,
+    examplePreviousScores: [45, 62, 38],
+    scoreInputType: 'text',
+    exampleShareText: `I solved the Aug 20, 2024 New York Times Mini Crossword in 0:45!`
   },
 ];

@@ -115,6 +115,34 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
         return null;
     }
 
+    case 'strands': {
+        // Example: "Strands #123\n“Themed words”\n🔵🔵🔵💡\n🔵🔵🔵🔵"
+        // We count the number of hints (💡). Fewer is better.
+        const hintMatch = shareText.match(/💡/g);
+        const hintCount = hintMatch ? hintMatch.length : 0;
+        
+        // Check if the spangram (the yellow dot) was found. If not, it's a fail.
+        if (!shareText.includes('🟡')) {
+            return 100; // Special value for failure (a high number of hints)
+        }
+        return hintCount;
+    }
+
+    case 'mini-crossword': {
+        // Example: "I solved the Aug 20, 2024 New York Times Mini Crossword in 0:45!"
+        const timeMatch = shareText.match(/in\s+(\d+):(\d+)/);
+        if (timeMatch && timeMatch[1] && timeMatch[2]) {
+            const minutes = parseInt(timeMatch[1], 10);
+            const seconds = parseInt(timeMatch[2], 10);
+            if (!isNaN(minutes) && !isNaN(seconds)) {
+                return (minutes * 60) + seconds; // Total time in seconds
+            }
+        }
+        // Fallback for just entering time in seconds
+        const directSeconds = parseFloat(shareText);
+        return isNaN(directSeconds) ? null : directSeconds;
+    }
+
     // Default to direct number parsing for any other games
     default: {
       const directScore = parseFloat(shareText);
