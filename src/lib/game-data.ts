@@ -10,6 +10,7 @@ export const GAMES_DATA: Game[] = [
     link: 'https://timeguessr.com/',
     icon: Timer,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `TimeGuessr #759 39,838/50,000
 🌎🟩🟩🟨 📅🟩🟩🟨
 🌎🟩🟩🟨 📅🟩⬛⬛
@@ -25,6 +26,7 @@ https://timeguessr.com`
     link: 'https://www.nytimes.com/games/wordle/index.html',
     icon: BookOpenText,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Wordle 1,468 4/6
 
 ⬛⬛⬛🟨🟨
@@ -39,6 +41,7 @@ https://timeguessr.com`
     link: 'https://worldle.teuteuf.fr/',
     icon: Globe,
     scoreInputType: 'text',
+    scoringStatus: 'unimplemented',
     exampleShareText: `#Worldle #1255 3/6 (100%)
 🟩🟩🟩⬛⬛➡️
 🟩🟩🟩🟩🟨↘️
@@ -52,6 +55,7 @@ https://worldle.teuteuf.fr`
     link: 'https://www.nytimes.com/games/connections',
     icon: Puzzle,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Connections Puzzle #746
 🟨🟨🟨🟨
 🟪🟪🟪🟪
@@ -66,6 +70,7 @@ https://worldle.teuteuf.fr`
     link: 'https://www.nytimes.com/games/strands',
     icon: Waves,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Strands #89
 “On the bright side”
 💡🔵🔵🔵🔵
@@ -79,6 +84,7 @@ https://worldle.teuteuf.fr`
     link: 'https://www.nytimes.com/crosswords/game/mini',
     icon: FileText,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `I solved the Aug 20, 2024 New York Times Mini Crossword in 0:45!`
   },
   {
@@ -88,6 +94,7 @@ https://worldle.teuteuf.fr`
     link: 'https://hexcodle.com/', // Note: Link provided was hexcodle, using that
     icon: Hexagon,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Hexle 178 3/6
 🟨🟩🟩🟩⬜🟩
 ⬜🟩🟩🟩🟩🟩
@@ -100,6 +107,7 @@ https://worldle.teuteuf.fr`
     link: 'https://www.britannica.com/games/victordle/',
     icon: Swords,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `I beat my opponent in Victordle!
 
 ⬛🟨⬛⬛⬛
@@ -117,6 +125,7 @@ https://worldle.teuteuf.fr`
     link: 'https://cyphrgame.com/',
     icon: Key,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Cyphr 27/06/2025
 Score: 28/28
 Guesses remaining: 25
@@ -135,6 +144,7 @@ Guesses remaining: 25
     link: 'https://squirdle.fireblend.com/',
     icon: Cat,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Squirdle 9/9
 🔼🟥🟩🔽🔽
 🔼🟥🟥🔼🔼
@@ -153,6 +163,7 @@ Guesses remaining: 25
     link: 'https://globle-game.com/',
     icon: Globe,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `🌎 Jun 26, 2025 🌍
 🔥 1 | Avg. Guesses: 6
 ⬜🟧⬜🟧🟧🟩 = 6
@@ -165,6 +176,7 @@ https://globle-game.com`
     link: 'https://www.geogridgame.com/',
     icon: Percent,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Score: 106.4 | Rank: 668/9,826
 I scored better than 93.2% of #geogridgame players!`
   },
@@ -175,6 +187,7 @@ I scored better than 93.2% of #geogridgame players!`
     link: 'https://playboardle.com/',
     icon: Grid,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Boardle 1072 2/5
 🟩🟩🟩⬜⬜
 🟩🟩🟩🟩🟩`
@@ -186,6 +199,7 @@ I scored better than 93.2% of #geogridgame players!`
     link: 'https://emovi.teuteuf.fr/',
     icon: Film,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Emovi 🎬 #1076
 🟥🟥🟩
 https://emovi.teuteuf.fr`
@@ -197,6 +211,7 @@ https://emovi.teuteuf.fr`
     link: 'https://www.foodguessr.com/',
     icon: Utensils,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `Total score: 14,000 / 15,000
 https://foodguessr.com`
   },
@@ -207,6 +222,7 @@ https://foodguessr.com`
     link: 'https://guessthe.game/',
     icon: Gamepad2,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `#GuessTheGame #1139
 🎮 🟥 🟥 🟩 ⬜ ⬜ ⬜
 #RookieGuesser`
@@ -218,6 +234,7 @@ https://foodguessr.com`
     link: 'https://pokedoku.com/',
     icon: BrainCircuit,
     scoreInputType: 'text',
+    scoringStatus: 'implemented',
     exampleShareText: `🌟 PokeDoku Champion 🌟
 Score: 9/9
 Uniqueness: 159/93 ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅`

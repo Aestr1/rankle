@@ -11,7 +11,7 @@ import React, { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, ExternalLink, Loader2, Info, ClipboardPaste, Star } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, Info, ClipboardPaste, Star, ShieldAlert } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/auth-context";
 import { addGameplay } from "@/lib/gameplay";
@@ -19,6 +19,7 @@ import { normalizeScore } from "@/lib/scoring";
 import { parseRawScore } from "@/lib/score-parser";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface GameCardProps {
   game: Game;
@@ -47,6 +48,8 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
       score: "", // Always start fresh
     },
   });
+  
+  const isScoringImplemented = game.scoringStatus === 'implemented';
 
   const handlePaste = async () => {
     if (!navigator.clipboard?.readText) {
@@ -75,7 +78,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
   };
 
   const onSubmit: SubmitHandler<ScoreFormData> = async (data) => {
-    if (!currentUser) return;
+    if (!currentUser || !isScoringImplemented) return;
     setIsSubmitting(true);
     
     // If it's the featured game, we don't normalize or save to the leaderboard.
@@ -213,6 +216,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                                 {...field}
                                 aria-describedby={`score-message-${game.id}`}
                                 autoComplete="off"
+                                disabled={!isScoringImplemented}
                               />
                           ) : (
                               <Input
@@ -224,6 +228,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                                 className="text-base pr-12"
                                 aria-describedby={`score-message-${game.id}`}
                                 autoComplete="off"
+                                disabled={!isScoringImplemented}
                               />
                           )}
                         </FormControl>
@@ -234,6 +239,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                             onClick={handlePaste}
                             className="absolute top-1 right-1 h-8 w-8 text-muted-foreground hover:text-foreground"
                             aria-label="Paste score from clipboard"
+                            disabled={!isScoringImplemented}
                           >
                             <ClipboardPaste className="h-5 w-5" />
                           </Button>
@@ -242,7 +248,7 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isSubmitting || !currentUser} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button type="submit" disabled={isSubmitting || !currentUser || !isScoringImplemented} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -250,7 +256,12 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
                     </>
                   ) : !currentUser ? (
                       "Sign in to Submit"
-                  ): (
+                  ) : !isScoringImplemented ? (
+                    <>
+                      <ShieldAlert className="mr-2 h-4 w-4"/>
+                      Scoring Coming Soon
+                    </>
+                  ) : (
                     "Submit Score"
                   )}
                 </Button>
@@ -274,12 +285,18 @@ export function GameCard({ game, isCompleted, onComplete, submittedScore, groupI
             </>
           )}
         </CardContent>
-        <CardFooter className="text-xs text-muted-foreground mt-auto flex items-center">
+        <CardFooter className="text-xs text-muted-foreground mt-auto flex items-center justify-between">
             {game.isFeatured && (
-                <div className="flex items-center text-amber-600 dark:text-amber-400">
-                    <Star className="w-4 h-4 mr-1.5" />
-                    <span className="font-semibold">Game of the Day</span>
-                </div>
+                <Badge variant="outline" className="border-amber-500 text-amber-500">
+                    <Star className="w-3 h-3 mr-1.5" />
+                    Game of the Day
+                </Badge>
+            )}
+            {!isScoringImplemented && !game.isFeatured && (
+                <Badge variant="outline" className="border-blue-500 text-blue-500">
+                    <ShieldAlert className="w-3 h-3 mr-1.5" />
+                    Alpha
+                </Badge>
             )}
         </CardFooter>
       </Card>

@@ -12,6 +12,7 @@ export interface Game {
   scoreInputType: 'number' | 'text';
   exampleShareText?: string;
   isFeatured?: boolean;
+  scoringStatus?: 'implemented' | 'unimplemented';
 }
 
 export interface LibraryGame {
