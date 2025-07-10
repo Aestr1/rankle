@@ -1,6 +1,6 @@
 
 import type { Game } from '@/types';
-import { Timer, BookOpenText, Globe, Puzzle, Waves, FileText } from 'lucide-react';
+import { Timer, BookOpenText, Globe, Puzzle, Waves, FileText, Film } from 'lucide-react';
 
 export const GAMES_DATA: Game[] = [
   {
@@ -64,27 +64,15 @@ https://worldle.teuteuf.fr`
 🟦🟦🟦🟦`
   },
   {
-    id: 'strands',
-    name: 'Strands',
-    description: 'Paste your full "Share" text. Score is based on hints used.',
-    link: 'https://www.nytimes.com/games/strands',
-    icon: Waves,
+    id: 'emovi',
+    name: 'Emovi',
+    description: 'Paste your full "Share" text to score based on the guess.',
+    link: 'https://emovi.teuteuf.fr/',
+    icon: Film,
     scoreInputType: 'text',
     scoringStatus: 'implemented',
-    exampleShareText: `Strands #89
-“On the bright side”
-💡🔵🔵🔵🔵
-🔵🟡🔵🔵
-🔵🔵`
-  },
-  {
-    id: 'mini-crossword',
-    name: 'The Mini',
-    description: 'Paste your full "Share" text. Score is based on time.',
-    link: 'https://www.nytimes.com/crosswords/game/mini',
-    icon: FileText,
-    scoreInputType: 'text',
-    scoringStatus: 'implemented',
-    exampleShareText: `I solved the Aug 20, 2024 New York Times Mini Crossword in 0:45!`
+    exampleShareText: `Emovi 🎬 #1076
+🟥🟥🟩
+https://emovi.teuteuf.fr`
   },
 ];
