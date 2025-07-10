@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Provides functions for normalizing game scores to a 0-100 scale.
  */
@@ -13,70 +14,78 @@ export function normalizeScore(gameId: string, rawScore: number): number {
     let normalizedScore: number;
 
     switch (gameId) {
-        case 'emovi': {
-            // 3-guess game
-            const scoreMap: {[key: number]: number} = {
-                1: 100, // 1st try
-                2: 75,  // 2nd try
-                3: 50,  // 3rd try
-                4: 0,   // Fail state
-            };
-            normalizedScore = scoreMap[rawScore] ?? 0;
+        // Games where a lower number of guesses is better
+        case 'wordle':
+        case 'hexle':
+        case 'guess-the-game':
+        case 'emovi': { // Now a 6-guess game
+            // Linear scale where 1 guess = 100, 7 (fail) = 0.
+            if (rawScore >= 7) return 0; // Fail state
+            if (rawScore < 1) return 100; // Edge case
+            normalizedScore = 100 * (1 - (rawScore - 1) / 6);
             break;
         }
-        // Games where a lower number of guesses is better (out of 6)
-        case 'wordle':
-        case 'worldle':
-             // This scoring curve is weighted to reward an average score (4/6) more highly.
-             const scoreMap: {[key: number]: number} = {
-                 1: 100, // Perfect
-                 2: 95,
-                 3: 90,
-                 4: 80,  // "B" grade
-                 5: 65,
-                 6: 50,
-                 7: 0,   // Fail state (X/6)
-             };
-             normalizedScore = scoreMap[rawScore] ?? 0;
-             break;
 
-        // Games where score is a percentage of a max score
-        case 'timeguessr':
-            // Max score is 50,000 based on share text format
+        case 'boardle': { // 5-guess game
+            if (rawScore >= 6) return 0; // Fail state
+            if (rawScore < 1) return 100;
+            normalizedScore = 100 * (1 - (rawScore - 1) / 5);
+            break;
+        }
+
+        case 'squirdle': { // 9-guess game, punishing
+            if (rawScore >= 10) return 0; // Fail state
+            if (rawScore < 1) return 100;
+            // Use an exponential curve to punish higher guesses more
+            normalizedScore = 100 * (1 - Math.pow((rawScore - 1) / 9, 0.5));
+            break;
+        }
+
+        case 'globle': { // 8-guess target
+            if (rawScore < 1) return 100;
+            if (rawScore > 8) return 0; // Treat >8 as a fail for scoring
+            normalizedScore = 100 * (1 - (rawScore - 1) / 8);
+            break;
+        }
+
+        // Games where a higher score is better
+        case 'cyphr': // max 28
+            normalizedScore = (rawScore / 28) * 100;
+            break;
+        case 'pokedoku': // max 9
+            normalizedScore = (rawScore / 9) * 100;
+            break;
+        case 'timeguessr': // max 50000
             normalizedScore = (rawScore / 50000) * 100;
             break;
+        case 'foodguessr': // max 15000
+            normalizedScore = (rawScore / 15000) * 100;
+            break;
+            
+        // Games with specific logic
+        case 'geogrid': // raw score is percentile
+            normalizedScore = rawScore;
+            break;
         
-        // Connections: raw score is number of mistakes (0-4)
-        case 'connections':
-            // This weighted curve gives a bonus for a perfect game.
-            const mistakeMap: {[key: number]: number} = {
-                0: 100, // Perfect!
-                1: 85,
-                2: 65,
-                3: 40,
-                4: 15,
-            };
-            normalizedScore = mistakeMap[rawScore] ?? 0;
+        case 'victordle': // Binary win/loss
+            normalizedScore = rawScore === 1 ? 100 : 0;
             break;
 
-        // Globle: Lower number of guesses is better (unlimited guesses)
-        case 'globle':
-            normalizedScore = Math.max(0, 100 - (rawScore - 1) * 4);
+        case 'connections': // rawScore is number of solved groups (0-4)
+            normalizedScore = rawScore * 25;
             break;
 
         case 'strands': {
             // rawScore is number of hints. Lower is better. 0 is perfect.
-            // 100 is a special value for failure.
-            if (rawScore === 100) return 0; // Failure case
+            if (rawScore === 100) return 0; // Failure case (no spangram)
             if (rawScore === 0) return 100; // Perfect score
-            // Give diminishing returns for each hint used.
-            normalizedScore = 100 - (rawScore * 15);
+            // Let's say max reasonable hints is 8
+            normalizedScore = 100 - (rawScore * 12.5);
             break;
         }
 
         case 'mini-crossword': {
             // rawScore is time in seconds. Lower is better.
-            // Let's set a "par" time of 60 seconds for a good score, and a max of 3 minutes.
             const maxTime = 180; // 3 minutes
             if (rawScore > maxTime) return 0;
             if (rawScore <= 20) return 100; // Excellent time
@@ -84,12 +93,16 @@ export function normalizeScore(gameId: string, rawScore: number): number {
             break;
         }
 
+        // Fallback for existing games not in the list
+        case 'worldle': {
+             const scoreMap: {[key: number]: number} = { 1: 100, 2: 95, 3: 90, 4: 80, 5: 65, 6: 50, 7: 0 };
+             normalizedScore = scoreMap[rawScore] ?? 0;
+             break;
+        }
+
         default:
-            // For any games not explicitly handled, we can't normalize.
-            // Throwing an error is the safest way to highlight this.
             throw new Error(`Scoring algorithm not implemented for game: "${gameId}".`);
     }
     
-    // Clamp the score between 0 and 100 and round to nearest integer
     return Math.round(Math.max(0, Math.min(100, normalizedScore)));
 }

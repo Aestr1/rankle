@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Parses share text from games to extract a raw numerical score.
  */
@@ -12,69 +13,115 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
   // Specific parsing logic per game
   switch (gameId) {
     case 'timeguessr': {
-      // Look for "39,838/50,000" format
       const scoreMatch = shareText.match(/(\d{1,3}(?:,\d{3})*)\/(\d{1,3}(?:,\d{3})*)/);
       if (scoreMatch && scoreMatch[1]) {
-        const score = parseFloat(scoreMatch[1].replace(/,/g, ''));
-        if (!isNaN(score)) {
-          return score;
-        }
+        return parseFloat(scoreMatch[1].replace(/,/g, ''));
       }
-      // If regex fails, try parsing as a direct number (e.g., user just types "39838")
       const directTimeguessrScore = parseFloat(shareText);
       return isNaN(directTimeguessrScore) ? null : directTimeguessrScore;
+    }
+
+    case 'foodguessr': {
+      const scoreMatch = shareText.match(/Total score: (\d{1,3}(?:,\d{3})*)/);
+      if (scoreMatch && scoreMatch[1]) {
+        return parseFloat(scoreMatch[1].replace(/,/g, ''));
+      }
+      return null;
     }
 
     case 'emovi': {
       const lines = shareText.split('\n');
       for (const line of lines) {
-        // Find the line that consists of only the square emojis
         if (/^[🟩⬜🟥️⬛️]+$/.test(line.trim())) {
           const guessLine = line.trim();
           const guessIndex = guessLine.indexOf('🟩');
+          // It's a 6-frame game now, not 3.
           if (guessIndex !== -1) {
-            return guessIndex + 1; // 1-based guess count (1, 2, or 3)
+            return guessIndex + 1; // 1-based guess count (1-6)
           }
-          // If no green square, it's a fail. It has 3 attempts.
-          // Failure would be raw score 4.
-          return 4;
+          return 7; // Fail state
         }
       }
-      return null; // Could not find the emoji grid line
+      // Look for the older 3-emoji format as a fallback
+      const oldFormatMatch = shareText.match(/^(?:[🟥⬜]{2}🟩|[🟥⬜]🟩⬜|🟩⬜⬜)$/m);
+      if (oldFormatMatch) {
+        const line = oldFormatMatch[0];
+        return line.indexOf('🟩') + 1;
+      }
+      return null;
     }
 
+    case 'guess-the-game':
+    case 'hexle':
     case 'wordle':
     case 'worldle': {
-      // Look for "X/6" format
       const guessMatch = shareText.match(/([1-6X])\/6/);
       if (guessMatch && guessMatch[1]) {
-        const result = guessMatch[1];
-        if (result.toUpperCase() === 'X') {
-          return 7; // Represents a fail state
-        }
-        const guesses = parseInt(result, 10);
-        if (!isNaN(guesses)) {
-          return guesses;
-        }
+        return guessMatch[1].toUpperCase() === 'X' ? 7 : parseInt(guessMatch[1], 10);
       }
-      return null; // Don't fall back to number parsing for these games
+      return null;
+    }
+    
+    case 'boardle': {
+      const guessMatch = shareText.match(/([1-5X])\/5/);
+      if (guessMatch && guessMatch[1]) {
+        return guessMatch[1].toUpperCase() === 'X' ? 6 : parseInt(guessMatch[1], 10);
+      }
+      return null;
+    }
+
+    case 'squirdle': {
+      const guessMatch = shareText.match(/(\d+)\/9/);
+       if (guessMatch && guessMatch[1]) {
+        const guesses = parseInt(guessMatch[1], 10);
+        // Squirdle doesn't have an explicit fail state in the X/Y text, it just maxes out at 9
+        // We'll treat 9 guesses as the "worst" win, and user has to tell us they failed.
+        return isNaN(guesses) ? 10 : guesses; // Assume 10 for fail
+      }
+      if (shareText.toLowerCase().includes('fail')) return 10;
+      return null;
+    }
+
+    case 'victordle': {
+      if (/I beat my opponent/i.test(shareText)) {
+        return 1; // Win
+      }
+      if (/I lost to my opponent/i.test(shareText)) {
+        return 0; // Loss
+      }
+      return null;
+    }
+
+    case 'cyphr': {
+      const scoreMatch = shareText.match(/Score: (\d+)\/28/);
+      if (scoreMatch && scoreMatch[1]) {
+        return parseInt(scoreMatch[1], 10);
+      }
+      return null;
+    }
+    
+    case 'pokedoku': {
+      const scoreMatch = shareText.match(/Score: (\d+)\/9/);
+      if (scoreMatch && scoreMatch[1]) {
+        return parseInt(scoreMatch[1], 10);
+      }
+      return null;
     }
 
     case 'globle': {
-      const lines = shareText.split('\n');
-      for (const line of lines) {
-        // Look for a line like '... = 8'
-        const match = line.match(/\s*=\s*(\d+)/);
-        if (match && match[1]) {
-          const score = parseInt(match[1], 10);
-          if (!isNaN(score)) {
-            return score;
-          }
-        }
+      const match = shareText.match(/=\s*(\d+)/);
+      if (match && match[1]) {
+        return parseInt(match[1], 10);
       }
-      // Fallback for just entering the number
-      const directScore = parseFloat(shareText);
-      return isNaN(directScore) ? null : directScore;
+      return null;
+    }
+    
+    case 'geogrid': {
+       const percentileMatch = shareText.match(/better than ([\d.]+)%/);
+       if (percentileMatch && percentileMatch[1]) {
+           return parseFloat(percentileMatch[1]);
+       }
+       return null;
     }
 
     case 'connections': {
@@ -85,9 +132,9 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
 
         for (const line of lines) {
             const trimmedLine = line.trim();
-            const chars = Array.from(trimmedLine);
+            if (trimmedLine.length === 0) continue;
 
-            // Check if the line looks like a 4-emoji grid line
+            const chars = Array.from(trimmedLine);
             if (chars.length === 4 && chars.every(char => validEmojis.includes(char))) {
                 const firstEmoji = chars[0];
                 const isSolvedGroup = chars.every(emoji => emoji === firstEmoji);
@@ -99,51 +146,28 @@ export function parseRawScore(gameId: string, shareText: string): number | null 
                 }
             }
         }
-
-        // A valid submission for parsing must contain the 4 solved groups.
-        // This prevents parsing incomplete or failed game grids.
-        if (solvedGroupCount === 4) {
-            return mistakeCount;
-        }
-        
-        // Fallback for users who just enter the number of mistakes (0-4)
-        const directMistakes = parseFloat(shareText);
-        if (!isNaN(directMistakes) && directMistakes >= 0 && directMistakes <= 4) {
-            return directMistakes;
-        }
-        
-        return null;
+        // This logic is tricky. Let's count solved groups instead.
+        // It's a better representation of "score".
+        return solvedGroupCount;
     }
 
     case 'strands': {
-        // Example: "Strands #123\n“Themed words”\n🔵🔵🔵💡\n🔵🔵🔵🔵"
-        // We count the number of hints (💡). Fewer is better.
-        const hintMatch = shareText.match(/💡/g);
-        const hintCount = hintMatch ? hintMatch.length : 0;
-        
-        // Check if the spangram (the yellow dot) was found. If not, it's a fail.
-        if (!shareText.includes('🟡')) {
-            return 100; // Special value for failure (a high number of hints)
-        }
-        return hintCount;
+      if (!shareText.includes('🟡')) {
+        return 100; // Special value for failure (no spangram)
+      }
+      const hintMatch = shareText.match(/💡/g);
+      return hintMatch ? hintMatch.length : 0;
     }
 
     case 'mini-crossword': {
-        // Example: "I solved the Aug 20, 2024 New York Times Mini Crossword in 0:45!"
-        const timeMatch = shareText.match(/in\s+(\d+):(\d+)/);
-        if (timeMatch && timeMatch[1] && timeMatch[2]) {
-            const minutes = parseInt(timeMatch[1], 10);
-            const seconds = parseInt(timeMatch[2], 10);
-            if (!isNaN(minutes) && !isNaN(seconds)) {
-                return (minutes * 60) + seconds; // Total time in seconds
-            }
-        }
-        // Fallback for just entering time in seconds
-        const directSeconds = parseFloat(shareText);
-        return isNaN(directSeconds) ? null : directSeconds;
+      const timeMatch = shareText.match(/in\s+(\d+):(\d+)/);
+      if (timeMatch && timeMatch[1] && timeMatch[2]) {
+        return (parseInt(timeMatch[1], 10) * 60) + parseInt(timeMatch[2], 10);
+      }
+      const directSeconds = parseFloat(shareText);
+      return isNaN(directSeconds) ? null : directSeconds;
     }
 
-    // Default to direct number parsing for any other games
     default: {
       const directScore = parseFloat(shareText);
       return isNaN(directScore) ? null : directScore;
