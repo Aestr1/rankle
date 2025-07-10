@@ -32,25 +32,25 @@
   }
 
   .dark {
-    --background: 264 39% 5%; /* Very Dark Purple */
-    --foreground: 270 15% 88%;
-    --card: 264 35% 10%; /* Darker Purple */
-    --card-foreground: 270 15% 88%;
-    --popover: 264 39% 5%;
-    --popover-foreground: 270 15% 88%;
-    --primary: 265 65% 65%; /* Lighter Purple for contrast */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 265 30% 25%;
-    --secondary-foreground: 270 15% 90%;
-    --muted: 265 30% 20%;
-    --muted-foreground: 270 10% 65%;
-    --accent: 185 90% 50%; /* Vibrant Teal */
-    --accent-foreground: 264 39% 5%;
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 265 30% 25%;
-    --input: 265 30% 20%;
-    --ring: 265 65% 65%;
+    --background: 222 84% 4%; /* Midnight Blue */
+    --foreground: 210 40% 98%;
+    --card: 222 84% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%; /* Electric Blue */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 91% 60%; /* Using Primary for Accent */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
