@@ -1,41 +1,75 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Users can read their own data and update their own profiles.
-    match /users/{userId} {
-      allow read, update: if request.auth.uid == userId;
-      allow create: if request.auth.uid != null;
-    }
-    
-    // Rules for the 'groups' collection
-    match /groups/{groupId} {
-      // Anyone authenticated can create a group.
-      allow create: if request.auth.uid != null;
-      
-      // Users can read a group's details if they are a member.
-      allow read: if request.auth.uid in resource.data.memberUids;
 
-      // Users can update (join) a group if they are authenticated.
-      // More specific logic (e.g., creator can't leave) is handled in server-side flows.
-      allow update: if request.auth.uid != null;
-      
-      // Only the creator can delete the group.
-      allow delete: if request.auth.uid == resource.data.creatorId;
+    // Helper function to check for group membership.
+    function isGroupMember(groupId) {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([request.auth.uid]);
+    }
+
+    // USERS collection
+    match /users/{userId} {
+      // Any authenticated user can get a user's public profile data.
+      allow get: if request.auth != null;
+      // A user can only list/query their own document.
+      allow list: if request.auth != null && request.auth.uid == userId;
+      // A user can only create or update their own document.
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      // Users cannot delete their accounts from the client.
+      allow delete: if false;
     }
     
-    // Gameplay can be created by any authenticated user.
-    match /gameplays/{gameplayId} {
-        allow create: if request.auth.uid != null;
-        // Reading specific gameplay documents can be restricted further if needed.
-        allow read: if request.auth.uid == resource.data.userId;
-    }
-    
-    // Anyone can submit feedback.
+    // FEEDBACK collection
+    // All feedback is submitted via a secure server flow, so no direct client access is needed.
     match /feedback/{feedbackId} {
-        allow create: if true;
+        allow read, write: if false;
+    }
+
+    // GROUPS collection
+    match /groups/{groupId} {
+      // Who can read groups?
+      // 1. Members of the group.
+      // 2. Anyone, if the group is public.
+      allow get: if isGroupMember(groupId) || resource.data.isPublic == true;
+      
+      // Who can query/list groups?
+      // 1. Users can query for groups they are a member of.
+      // 2. Anyone can query for public groups.
+      allow list: if (request.query.resource.data.isPublic == true) || 
+                     (request.auth != null && request.query.resource.data.memberUids.hasAny([request.auth.uid]));
+
+      // Who can create groups?
+      // An authenticated user creating a group for themself.
+      allow create: if request.auth != null &&
+                     request.resource.data.creatorId == request.auth.uid &&
+                     request.resource.data.memberUids[0] == request.auth.uid;
+      
+      // All other mutations (join, leave, delete, update) must be done
+      // via secure server flows, so direct client updates are disabled.
+      allow update, delete: if false;
+    }
+
+    // GAMEPLAYS collection
+    match /gameplays/{gameplayId} {
+      // Who can read scores?
+      // 1. Anyone can read global scores (for the main leaderboard).
+      // 2. Group members can read scores for their group's games.
+      // 3. A user can always read their own scores.
+      allow read: if (resource.data.groupId == null) ||
+                   (resource.data.groupId != null && isGroupMember(resource.data.groupId)) ||
+                   (request.auth != null && request.auth.uid == resource.data.userId);
+
+      // Who can create scores?
+      // An authenticated user can only create a score for themself.
+      // Display name must match the user's auth token to prevent spoofing.
+      allow create: if request.auth != null &&
+                     request.auth.uid == request.resource.data.userId &&
+                     request.resource.data.userDisplayName == request.auth.token.name;
+
+      // Scores are immutable from the client.
+      allow update, delete: if false;
     }
   }
 }
