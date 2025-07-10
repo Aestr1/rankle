@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Trophy, Menu } from "lucide-react";
@@ -78,8 +78,19 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        {/* Mobile Menu Trigger */}
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left Section (Logo & Nav) */}
+        <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center space-x-2">
+                <Trophy className="h-8 w-8 text-primary" />
+                <span className="hidden font-bold sm:inline-block text-2xl font-headline">Daily Duel</span>
+            </Link>
+            <nav className="hidden md:flex items-center space-x-6">
+              {renderNavLinks()}
+            </nav>
+        </div>
+
+        {/* Mobile Menu Trigger (becomes part of the right section for layout) */}
         <div className="md:hidden">
             <Sheet>
                 <SheetTrigger asChild>
@@ -89,10 +100,12 @@ export function AppHeader() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="pr-0 w-3/4">
-                    <Link href="/" className="mb-8 flex items-center px-4">
-                        <Trophy className="mr-2 h-7 w-7 text-primary" />
-                        <span className="font-bold text-xl font-headline">Daily Duel</span>
-                    </Link>
+                    <SheetClose asChild>
+                      <Link href="/" className="mb-8 flex items-center px-4">
+                          <Trophy className="mr-2 h-7 w-7 text-primary" />
+                          <span className="font-bold text-xl font-headline">Daily Duel</span>
+                      </Link>
+                    </SheetClose>
                     <div className="flex flex-col space-y-2 px-2">
                         {renderNavLinks(true)}
                     </div>
@@ -100,21 +113,8 @@ export function AppHeader() {
             </Sheet>
         </div>
         
-        {/* Left Section (Logo) */}
-        <div className="hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Trophy className="h-8 w-8 text-primary" />
-            <span className="hidden font-bold sm:inline-block text-2xl font-headline">Daily Duel</span>
-          </Link>
-        </div>
-
-        {/* Center Section (Nav Links) */}
-        <nav className="hidden md:flex flex-1 items-center justify-center space-x-6">
-          {renderNavLinks()}
-        </nav>
-        
         {/* Right Section (Auth Button) */}
-        <div className="flex items-center justify-end md:w-auto w-full">
+        <div className="hidden md:flex items-center justify-end">
           <AuthButton />
         </div>
       </div>
