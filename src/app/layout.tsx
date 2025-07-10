@@ -8,6 +8,26 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'Rankle',
   description: 'A hub for playing daily games with friends.',
+  openGraph: {
+    title: 'Rankle',
+    description: 'A hub for playing daily games with friends.',
+    images: [
+      {
+        url: 'https://placehold.co/1200x630.png',
+        width: 1200,
+        height: 630,
+        alt: 'Rankle - Daily Puzzle Games Hub',
+      },
+    ],
+    siteName: 'Rankle',
+    type: 'website',
+    locale: 'en_US',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
