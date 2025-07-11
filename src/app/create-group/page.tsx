@@ -118,10 +118,10 @@ export default function CreateGroupPage() {
       }
 
     } catch (error) {
-        console.error("Error creating group:", error);
+        console.error("Full error object from group creation:", error); // This will log the full error
         toast({
             title: "Error Creating Group",
-            description: "Something went wrong. Please try again.",
+            description: "Something went wrong. Check the developer console for more details.",
             variant: "destructive",
         });
         setIsLoading(false);
