@@ -75,14 +75,19 @@ export default function CreateGroupPage() {
 
 
   const onSubmit: SubmitHandler<CreateGroupFormData> = async (data) => {
-    if (!currentUser) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to create a group.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // TEMPORARY: Dummy user for debugging without sign-in
+    const dummyUser = {
+        uid: 'DEBUG_USER_001',
+        displayName: 'Debug User',
+        photoURL: `https://placehold.co/100x100.png`,
+    };
+
+    const userToSubmit = currentUser ? {
+        uid: currentUser.uid,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+    } : dummyUser;
+
     setIsLoading(true);
 
     try {
@@ -91,11 +96,7 @@ export default function CreateGroupPage() {
         selectedGames: data.selectedGames,
         joinCode: data.joinCode,
         isPublic: data.isPublic,
-        user: {
-          uid: currentUser.uid,
-          displayName: currentUser.displayName,
-          photoURL: currentUser.photoURL,
-        }
+        user: userToSubmit,
       };
 
       const result = await createPlayGroup(input);
@@ -289,14 +290,12 @@ export default function CreateGroupPage() {
                 </FormItem>
               </CardContent>
               <CardFooter>
-                <Button type="submit" disabled={isLoading || !currentUser} className="w-full text-lg py-6 bg-primary hover:bg-primary/90">
+                <Button type="submit" disabled={isLoading} className="w-full text-lg py-6 bg-primary hover:bg-primary/90">
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       Creating Group...
                     </>
-                  ) : !currentUser ? (
-                    "Sign in to Create Group"
                   ) : (
                     "Create Play Group"
                   )}
