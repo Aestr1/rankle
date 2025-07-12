@@ -101,7 +101,18 @@ export default function CreateGroupPage() {
       const result = await createPlayGroup(input);
       
       if (result.error) {
-        form.setError("joinCode", { type: "manual", message: result.error });
+        // Handle specific error for join code
+        if (result.error.includes("join code is already in use")) {
+            form.setError("joinCode", { type: "manual", message: result.error });
+        } else {
+            // Handle other errors (like the server config one)
+            toast({
+                title: "Error Creating Group",
+                description: result.error,
+                variant: "destructive",
+                duration: 10000, // Show for longer
+            });
+        }
         setIsLoading(false);
         return;
       }

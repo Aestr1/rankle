@@ -125,6 +125,7 @@ const createGroupFlow = ai.defineFlow(
   async (input) => {
     const adminDb = getAdminDb();
     if (!adminDb) {
+      console.error(SERVER_CONFIG_ERROR);
       return { error: SERVER_CONFIG_ERROR };
     }
 
@@ -318,5 +319,3 @@ const getPublicGroupsFlow = ai.defineFlow(
         return groups;
     }
 );
-
-    
